@@ -1,0 +1,22 @@
+﻿# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Java
+*.class
+*.jar
+target/
+
+# React / Node
+node_modules/
+dist/
+build/
+.env
