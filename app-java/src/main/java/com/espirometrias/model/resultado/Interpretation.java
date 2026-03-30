@@ -21,16 +21,18 @@ public class Interpretation {
 
     //ESTO??
     @OneToOne
-    @JoinColumn(name = "resultadoEspirometria_id")
-    private SpirometryResult resultadoEspirometria;
+    @JoinColumn(name = "spirometryResult_id")
+    private SpirometryResult spirometryResult;
 
-    @OneToMany(mappedBy = "interpretacion", cascade = CascadeType.ALL)
-    private List<Pattern> patron;
+    @OneToOne(mappedBy = "interpretation")
+    private Pattern pattern;
 
-    @OneToOne(mappedBy = "interpretacion")
-    private BronchodilatorResponse rBroncodilatador;
+    @OneToOne(mappedBy = "interpretation")
+    private BronchodilatorResponse bronchodilatorResponse;
 
     //VIENE DADO YA DE PYTHON O CALCULAMOS AQUÍ CON LÓGICA
     private String conclusion;
-    private List<String> advertencias;
+
+    @ElementCollection
+    private List<String> advertences;
 }

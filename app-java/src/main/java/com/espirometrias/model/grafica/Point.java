@@ -19,6 +19,6 @@ public class Point {
     private Double x, y;
 
     @ManyToOne
-    @JoinColumn(name = "curva_id")
-    private Curve curva;
+    @JoinColumn(name = "curve_id")
+    private Curve curve;
 }

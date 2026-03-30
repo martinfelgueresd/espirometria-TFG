@@ -15,12 +15,12 @@ public class Param {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nombre;
-    private Double teorico;
-    private Double prueba;
-    private Double pctTeorico;
+    private String name;
+    private Double theoretical;
+    private Double test;
+    private Double pctTheoretical;
 
     @ManyToOne
-    @JoinColumn(name = "maniobra_id")
-    private Spirometry maniobra;
+    @JoinColumn(name = "spirometry_id")
+    private Spirometry spirometry;
 }

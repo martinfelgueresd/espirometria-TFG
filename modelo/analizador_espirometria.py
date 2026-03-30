@@ -133,6 +133,7 @@ def _parsear_paciente(root):
     if person is None:
         return {}
 
+    personal_id = _get_attr(person, 'PersonalID', '')
     first_name  = _get_attr(person, 'FirstName', '')
     last_name   = _get_attr(person, 'LastName', '')
     birth_date  = _get_attr(person, 'BirthDate', '')
@@ -166,6 +167,7 @@ def _parsear_paciente(root):
     fumador_raw = _get_attr(session_data, 'Smoking') if session_data else None
 
     return {
+        'personal_id':     personal_id,
         'nombre':          f"{first_name} {last_name}".strip(),
         'fecha_nacimiento': birth_date.split(' ')[0] if birth_date else None,
         'edad':            edad,

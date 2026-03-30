@@ -15,21 +15,22 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "sessions")
 public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDate fecha;
-    private Double temperatura;
-    private Double presion;
-    private Double humedad;
+    private LocalDate date;
+    private Double temperature;
+    private Double pression;
+    private Double humidity;
 
     @ManyToOne
-    @JoinColumn(name = "paciente_id")
-    private Patient paciente;
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
 
-    @OneToMany(mappedBy = "sesion", cascade = CascadeType.ALL)
-    private List<Spirometry> maniobras;
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
+    private List<Spirometry> spirometries;
 
     @OneToOne
     @JoinColumn(name = "resultadoEspirometria_id")

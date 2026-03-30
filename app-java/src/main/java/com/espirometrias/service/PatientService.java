@@ -24,6 +24,7 @@ public class PatientService {
     public PatientResponse create(PatientRequest patient)
     {
         Patient p = patientMapper.toEntity(patient);
+        System.out.println(p);
         patientRepository.save(p);
         return patientMapper.toResponse(p);
     }

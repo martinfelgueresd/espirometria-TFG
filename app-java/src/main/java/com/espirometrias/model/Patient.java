@@ -18,16 +18,23 @@ public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nombre;
-    private LocalDate fecha_nacimiento;
-    private Integer edad;
-    private String sexo;
-    private Double altura;
-    private Double peso;
+    @Column(unique = true)
+    private String personal_id;
+    private String name;
+    private LocalDate birth_date;
+    private Integer age;
+    private String gender;
+    private Double height;
+    private Double weight;
     private Double imc;
-    private Boolean fumador;
-    private String grupoEtnico;
+    private Boolean smoker;
+    private String ethnicGroup;
 
-    @OneToMany(mappedBy = "paciente")
-    private List<Session> sesiones;
+    @OneToMany(mappedBy = "patient")
+    private List<Session> sessions;
+
+    @Override
+    public String toString(){
+        return name + " --> " + age;
+    }
 }

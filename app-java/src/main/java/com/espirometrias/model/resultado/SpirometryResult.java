@@ -18,12 +18,12 @@ public class SpirometryResult {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "sesion_id")
-    private Session sesion;
+    @JoinColumn(name = "session_id")
+    private Session session;
 
-    @OneToOne(mappedBy = "interpretacion")
-    private Interpretation interpretacion;
+    @OneToOne(mappedBy = "spirometryResult")
+    private Interpretation interpretation;
 
-    @OneToOne(mappedBy = "seleccion")
-    private Selection seleccion;
+    @OneToOne(mappedBy = "spirometryResult")
+    private Selection selection;
 }

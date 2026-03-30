@@ -1,5 +1,6 @@
 package com.espirometrias.client;
 
+import com.espirometrias.dto.SpirometryResponse;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,13 +16,13 @@ public class PythonApiClient {
         this.webClient = webClient;
     }
 
-    public ManiobraResponse analizar(MultipartFile xml){
+    public SpirometryResponse analizar(MultipartFile xml){
         return webClient.post()
                 .uri("/analizar")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData("file", xml.getResource()))
                 .retrieve()
-                .bodyToMono(ManiobraResponse.class)
+                .bodyToMono(SpirometryResponse.class)
                 .block();
     }
 }

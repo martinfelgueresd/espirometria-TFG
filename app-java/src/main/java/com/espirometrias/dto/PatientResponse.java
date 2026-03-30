@@ -1,22 +1,23 @@
 package com.espirometrias.dto;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientResponse {
-
-    private String nombre;
-    private LocalDate fecha_nacimiento;
-    private Integer edad;
-    private String sexo;
-    private Double altura;
-    private Double peso;
-    private Boolean fumador;
-    private String grupoEtnico;
+    @Column(unique = true)
+    private String personal_id;
+    private String name;
+    private LocalDate birth_date;
+    private Integer age;
+    private String gender;
+    private Double height;
+    private Double weight;
+    private Boolean smoker;
+    private String ethnicGroup;
 }

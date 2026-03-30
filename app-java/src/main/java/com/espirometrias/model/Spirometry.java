@@ -15,24 +15,26 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "spirometries")
 public class Spirometry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String phase;
+    @Column(name = "spirometry_order")
     private Integer order;
-    private LocalTime hora;
-    private Boolean aceptable;
-    private Character grado;
-    private String motivoRechazo;
+    private LocalTime hour;
+    private Boolean acceptable;
+    private Character grade;
+    private String rejection_reason;
 
     @ManyToOne
-    @JoinColumn(name = "sesion_id")
-    private Session sesion;
+    @JoinColumn(name = "session_id")
+    private Session session;
 
-    @OneToMany(mappedBy = "maniobra", cascade = CascadeType.ALL)
-    private List<Curve> curvas;
+    @OneToMany(mappedBy = "spirometry", cascade = CascadeType.ALL)
+    private List<Curve> curves;
 
-    @OneToMany(mappedBy = "maniobra", cascade = CascadeType.ALL)
-    private List<Param> parametros;
+    @OneToMany(mappedBy = "spirometry", cascade = CascadeType.ALL)
+    private List<Param> params;
 }

@@ -17,13 +17,13 @@ public class Pattern {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String diagnostico;
-    private Boolean obstruccion;
-    private Boolean fvc_baja;
-    private String severidad;
-    private String descripcion;
+    private String diagnostic;
+    private Boolean obstruction;
+    private Boolean fvc_low;
+    private String severity;
+    private String description;
 
     @OneToOne
-    @JoinColumn(name = "interpretacion_id")
-    private Interpretation interpretacion;
+    @JoinColumn(name = "interpretation_id")
+    private Interpretation interpretation;
 }

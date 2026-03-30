@@ -17,10 +17,10 @@ public class BronchodilatorResponse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Boolean positiva;
-    private String tipo;
+    private Boolean positive;
+    private String type;
 
     @OneToOne
-    @JoinColumn(name = "interpretacion_id")
-    private Interpretation interpretacion;
+    @JoinColumn(name = "interpretation_id")
+    private Interpretation interpretation;
 }

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -18,9 +20,9 @@ public class Selection {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "resultadoEspirometria_id")
-    private SpirometryResult resultadoEspirometria;
+    @JoinColumn(name = "spirometryResult_id")
+    private SpirometryResult spirometryResult;
 
-    @OneToMany(mappedBy = "seleccion")
-    private PhaseResult resultadoFase;
+    @OneToMany(mappedBy = "selection")
+    private List<PhaseResult> phaseResults;
 }

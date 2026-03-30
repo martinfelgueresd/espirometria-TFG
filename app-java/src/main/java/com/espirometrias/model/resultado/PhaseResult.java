@@ -19,14 +19,15 @@ public class PhaseResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private List<String> signalKeysUsadas;
-    private Character gradoSesion;
-    private Integer nManiobrasAceptables;
-    private Integer nManiobrasTotales;
-    private PhaseType tipoFase;
-    private String advertencia;
+    @ElementCollection
+    private List<String> usedSignalKeys;
+    private Character sessionGrade;
+    private Integer acceptableSpirometries;
+    private Integer totalSpirometries;
+    private PhaseType phaseType;
+    private String advertence;
 
     @ManyToOne
-    @JoinColumn(name = "seleccion_id")
-    private Selection seleccion;
+    @JoinColumn(name = "selection_id")
+    private Selection selection;
 }

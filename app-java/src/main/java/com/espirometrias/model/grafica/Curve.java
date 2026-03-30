@@ -1,6 +1,7 @@
 package com.espirometrias.model.grafica;
 
 import com.espirometrias.model.CurveType;
+import com.espirometrias.model.Spirometry;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,9 +20,12 @@ public class Curve {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private CurveType tipoCurva;
+    private CurveType curveType;
 
-    @OneToMany(mappedBy = "curva_id", cascade = CascadeType.ALL)
-    private List<Point> puntos;
+    @OneToMany(mappedBy = "curve", cascade = CascadeType.ALL)
+    private List<Point> points;
 
+    @ManyToOne
+    @JoinColumn(name = "spirometry_id")
+    private Spirometry spirometry;
 }
