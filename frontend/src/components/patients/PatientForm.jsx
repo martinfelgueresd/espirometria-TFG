@@ -8,11 +8,11 @@ function PatientForm({ onPatientCreated }) {
         surname: "",
         birth_date: "",
         age: "",
-        gender: "",
+        gender: "F",
         height: "",
         weight: "",
-        smoker: "",
-        ethnic_group: ""
+        smoker: "false",
+        ethnic_group: "caucasian"
     });
 
     const handleChange = (e) => {
@@ -23,7 +23,6 @@ function PatientForm({ onPatientCreated }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         await createPatient(form);
-        onPatientCreated();
         setForm({
             personal_id: "",
             name: "",
@@ -35,64 +34,89 @@ function PatientForm({ onPatientCreated }) {
             weight: "",
             smoker: "",
             ethnic_group: "" });
+        onPatientCreated();
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="name">Name</label>
-                <input name="personal_id" placeholder="DNI" value={form.personal_id} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="name">Name</label>
-                <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="surname">Surname</label>
-                <input name="surname" placeholder="Surname" value={form.surname} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="birth_date">Date</label>
-                <input name="birth_date" type="date" placeholder="Date" value={form.birth_date} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="age">Age</label>
-                <input name="age" type="number" placeholder="Age" value={form.age} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="gender">Gender</label>
-                <select name="gender" value={form.gender} onChange={handleChange} required>
-                    <option value="M"> Male </option>
-                    <option value="F"> Female </option>
-                </select>
-            </div>
-            <div>
-                <label htmlFor="height">Height</label>
-                <input name="height" type="number" placeholder="Height" value={form.height} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="weight">Weight</label>
-                <input name="weight" type="number" placeholder="Weight" value={form.weight} onChange={handleChange} required/>
-            </div>
-            <div>
-                <label htmlFor="smoker">Smoker</label>
-                <select name="smoker" value={form.smoker} onChange={handleChange} required>
-                    <option value="true"> Yes </option>
-                    <option value ="false"> No </option>
-                </select>
-            </div>
-            <div>
-                <label htmlFor="ethnic_group">Ethnic group</label>
-                <select name="ethnic_group" value={form.ethnic_group} onChange={handleChange} required>
-                    <option value={"caucasian"}> Caucasian</option>
-                    <option value={"african_american"}> African American</option>
-                    <option value={"asian"}> Asian </option>
-                    <option value={"hispanic"}> Hispanic </option>
-                    <option value={"other"}> Other </option>
-                </select>
-            </div>
-            <button type="submit">Guardar</button>
-        </form>
+        <div className="p-6 max-w-3xl mx-auto">
+
+            <h1 className="text-3xl font-bold text-gray-800 text-center mt-8 mb-2">New Patient Record</h1>
+            <p className="text-center text-sm text-gray-500 mb-8">Fill in the patient's information below</p>
+
+            <form onSubmit={handleSubmit}>
+                <div className="flex flex-col gap-6 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+
+                    <div className="grid grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="name">Name</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="name" value={form.name} onChange={handleChange} required/>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="surname">Surname</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="surname" value={form.surname} onChange={handleChange} required/>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="personal_id">DNI</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="personal_id" value={form.personal_id} onChange={handleChange} required/>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="birth_date">Date</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="birth_date" type="date" value={form.birth_date} onChange={handleChange} required/>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="age">Age</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="age" type="number" value={form.age} onChange={handleChange} required/>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="gender">Gender</label>
+                            <select className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="gender" value={form.gender} onChange={handleChange} required>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="height">Height</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="height" type="number" value={form.height} onChange={handleChange} required/>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="weight">Weight</label>
+                            <input className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="weight" type="number" value={form.weight} onChange={handleChange} required/>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="smoker">Smoker</label>
+                            <select className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="smoker" value={form.smoker} onChange={handleChange} required>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-700" htmlFor="ethnic_group">Ethnic group</label>
+                            <select className="border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" name="ethnic_group" value={form.ethnic_group} onChange={handleChange} required>
+                                <option value="caucasian">Caucasian</option>
+                                <option value="african_american">African American</option>
+                                <option value="asian">Asian</option>
+                                <option value="hispanic">Hispanic</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors">
+                        Save Patient
+                    </button>
+
+                </div>
+            </form>
+        </div>
     );
 }
 

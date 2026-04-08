@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,13 +29,17 @@ public class Patient {
     private Double weight;
     private Double imc;
     private Boolean smoker;
-    private String ethnicGroup;
+    private String ethnic_group;
 
     @OneToMany(mappedBy = "patient")
-    private List<Session> sessions;
+    private List<Session> sessions = new ArrayList<>();
 
-    @Override
-    public String toString(){
-        return name + " --> " + age;
+    @PrePersist
+    public void calculateImc()
+    {
+        if (height != null && weight != null && height > 0) {
+            double resultado = weight / Math.pow(height / 100.0, 2);
+            this.imc = Math.round(resultado * 100.0) / 100.0;
+        }
     }
 }

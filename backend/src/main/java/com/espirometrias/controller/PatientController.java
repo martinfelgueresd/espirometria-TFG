@@ -21,7 +21,6 @@ public class PatientController {
     @PostMapping("/create")
     public PatientResponse create(@RequestBody PatientRequest patient)
     {
-        System.out.println(patient);
         return patientService.create(patient);
     }
 

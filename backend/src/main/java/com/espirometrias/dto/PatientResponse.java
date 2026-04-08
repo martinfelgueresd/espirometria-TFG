@@ -18,6 +18,7 @@ public class PatientResponse {
     private String gender;
     private Double height;
     private Double weight;
+    private Double imc;
     private Boolean smoker;
-    private String ethnicGroup;
+    private String ethnic_group;
 }
