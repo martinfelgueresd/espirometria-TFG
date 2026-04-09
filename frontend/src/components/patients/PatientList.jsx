@@ -11,14 +11,14 @@ function PatientList({ onPatientClicked }) {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900">Patient List</h1>
-            <p className="mt-1 text-sm text-gray-500">Manage and review all registered patients</p>
+            <h1 className="text-2xl font-bold text-gray-900">Listado de Pacientes</h1>
+            <p className="mt-1 text-sm text-gray-500">Gestiona y revisa todos los pacientes registrados</p>
 
             <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                     <tr>
-                        {["Name", "DNI", "Age", "Gender", "IMC", "Smoker", "Sessions", "Status"].map(h => (
+                        {["Nombre", "DNI", "Edad", "Género", "IMC", "Fumador", "Sesiones", "Estado"].map(h => (
                             <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                 {h}
                             </th>

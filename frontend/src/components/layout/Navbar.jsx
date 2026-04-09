@@ -9,7 +9,7 @@ function Navbar({ view, setView }) {
                         : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
             >
-                Patient List
+                Listado de Pacientes
             </button>
             <button
                 onClick={() => setView("form")}
@@ -19,7 +19,7 @@ function Navbar({ view, setView }) {
                         : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
             >
-                New Patient
+                Nuevo Paciente
             </button>
         </nav>
     );

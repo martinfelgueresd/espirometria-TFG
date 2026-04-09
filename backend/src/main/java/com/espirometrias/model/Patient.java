@@ -22,6 +22,7 @@ public class Patient {
     @Column(unique = true)
     private String personal_id;
     private String name;
+    private String surname;
     private LocalDate birth_date;
     private Integer age;
     private String gender;
