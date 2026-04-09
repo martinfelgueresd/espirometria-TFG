@@ -9,8 +9,9 @@ import java.time.LocalDate;
 @Setter
 @Getter
 public class PatientRequest {
+    private Long id;
     @Column(unique = true)
-    private String personal_id;
+    private String personalId;
     private String name;
     private String surname;
     private LocalDate birth_date;

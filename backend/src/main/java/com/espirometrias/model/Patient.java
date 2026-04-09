@@ -20,7 +20,7 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(unique = true)
-    private String personal_id;
+    private String personalId;
     private String name;
     private String surname;
     private LocalDate birth_date;

@@ -3,6 +3,7 @@ package com.espirometrias.controller;
 import com.espirometrias.dto.PatientRequest;
 import com.espirometrias.dto.PatientResponse;
 import com.espirometrias.service.PatientService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,33 +19,29 @@ public class PatientController {
         this.patientService = patientService;
     }
 
-    @PostMapping("/create")
-    public PatientResponse create(@RequestBody PatientRequest patient)
-    {
-        return patientService.create(patient);
+    @PostMapping("/")
+    public ResponseEntity<PatientResponse> create(@RequestBody PatientRequest patient) {
+        return ResponseEntity.status(201).body(patientService.create(patient));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public void delete(@PathVariable Long id)
-    {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         patientService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/edit/{id}")
-    public PatientResponse editPatient(@RequestBody PatientRequest patient)
-    {
-        return patientService.editPatient(patient);
+    @PutMapping("/{id}")
+    public ResponseEntity<PatientResponse> editPatient(@PathVariable Long id, @RequestBody PatientRequest patient) {
+        return ResponseEntity.ok(patientService.editPatient(id, patient));
     }
 
-    @GetMapping("/list")
-    public List<PatientResponse> getPatients()
-    {
-        return patientService.getPatients();
+    @GetMapping("/")
+    public ResponseEntity<List<PatientResponse>> getPatients() {
+        return ResponseEntity.ok(patientService.getPatients());
     }
 
-    @GetMapping("/get/{id}")
-    public PatientResponse getPatient(@PathVariable Long id)
-    {
-        return patientService.getById(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<PatientResponse> getPatient(@PathVariable Long id) {
+        return ResponseEntity.ok(patientService.getById(id));
     }
 }

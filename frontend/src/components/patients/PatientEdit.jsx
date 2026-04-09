@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { createPatient } from "../../services/patientService";
+import {createPatient, editPatient} from "../../services/patientService";
 
-function PatientForm({ onPatientCreated }) {
+function PatientEdit({ patient, onPatientEdited}) {
     const [form, setForm] = useState({
-        personalId: "",
-        name: "",
-        surname: "",
-        birth_date: "",
-        age: "",
-        gender: "F",
-        height: "",
-        weight: "",
-        smoker: "false",
-        ethnic_group: "caucasian"
+        personalId: patient.personalId,
+        name: patient.name,
+        surname: patient.surname,
+        birth_date: patient.birth_date,
+        age: patient.age,
+        gender: patient.gender,
+        height: patient.height,
+        weight: patient.weight,
+        smoker: patient.smoker,
+        ethnic_group: patient.ethnic_group
     });
 
     const handleChange = (e) => {
@@ -22,25 +22,26 @@ function PatientForm({ onPatientCreated }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await createPatient(form);
+        console.log(patient.id)
+        await editPatient(form, patient.id);
         setForm({
-            personalId: "",
-            name: "",
-            surname: "",
-            birth_date: "",
-            age: "",
-            gender: "",
-            height: "",
-            weight: "",
-            smoker: "",
-            ethnic_group: "" });
-        onPatientCreated();
+            personalId: patient.personalId,
+            name: patient.name,
+            surname: patient.surname,
+            birth_date: patient.birth_date,
+            age: patient.age,
+            gender: patient.gender,
+            height: patient.height,
+            weight: patient.weight,
+            smoker: patient.smoker,
+            ethnic_group: patient.ethnic_group});
+            onPatientEdited();
     };
 
     return (
         <div className="p-6 max-w-3xl mx-auto">
 
-            <h1 className="text-3xl font-bold text-gray-800 text-center mt-8 mb-2">Registro Nuevo Paciente</h1>
+            <h1 className="text-3xl font-bold text-gray-800 text-center mt-8 mb-2">Editar Paciente</h1>
             <p className="text-center text-sm text-gray-500 mb-8">Rellena la información del paciente debajo</p>
 
             <form onSubmit={handleSubmit}>
@@ -111,7 +112,7 @@ function PatientForm({ onPatientCreated }) {
                     </div>
 
                     <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors">
-                        Guardar Paciente
+                        Actualizar Paciente
                     </button>
 
                 </div>
@@ -120,4 +121,4 @@ function PatientForm({ onPatientCreated }) {
     );
 }
 
-export default PatientForm;
+export default PatientEdit;

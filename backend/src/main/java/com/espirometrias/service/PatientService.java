@@ -36,7 +36,7 @@ public class PatientService {
         patientRepository.delete(p);
     }
 
-    public PatientResponse getById(long id)
+    public PatientResponse getById(Long id)
     {
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient no found"));
@@ -49,9 +49,10 @@ public class PatientService {
                 .map(patientMapper::toResponse).toList();
     }
 
-    public PatientResponse editPatient(PatientRequest patient)
+    public PatientResponse editPatient(Long id, PatientRequest patient)
     {
         Patient p = patientMapper.toEntity(patient);
+        p.setId(id);
         patientRepository.save(p);
         return patientMapper.toResponse(p);
     }
