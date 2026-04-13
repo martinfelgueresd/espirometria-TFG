@@ -11,22 +11,19 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Entity
+@Table(name = "spirometries")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "spirometries")
 public class Spirometry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String phase;
     @Column(name = "spirometry_order")
     private Integer order;
     private LocalTime hour;
     private Boolean acceptable;
-    private Character grade;
-    private String rejection_reason;
 
     @ManyToOne
     @JoinColumn(name = "session_id")

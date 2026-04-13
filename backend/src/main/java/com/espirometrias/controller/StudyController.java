@@ -1,20 +1,20 @@
 package com.espirometrias.controller;
 
-import com.espirometrias.dto.SpirometryResponse;
 import com.espirometrias.service.SessionService;
+import com.espirometrias.service.StudyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/spirometries")
-public class SessionController {
+@RequestMapping("/study")
+public class StudyController {
 
-    private final SessionService sessionService;
+    private final StudyService studyService;
 
-    public SessionController(SessionService sessionService)
+    public StudyController(StudyService studyService)
     {
-        this.sessionService = sessionService;
+        this.studyService = studyService;
     }
 
     @PostMapping("/upload/{id}")
@@ -23,7 +23,7 @@ public class SessionController {
         if(file.isEmpty())
             throw new IllegalArgumentException("The file is empty");
 
-        sessionService.uploadSpirometry(file);
+        studyService.uploadStudy(id, file);
         return ResponseEntity.noContent().build();
     }
 }

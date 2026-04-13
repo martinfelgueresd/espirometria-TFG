@@ -1,7 +1,6 @@
 package com.espirometrias.service;
 
-import com.espirometrias.dto.PatientRequest;
-import com.espirometrias.dto.PatientResponse;
+import com.espirometrias.dto.PatientDTO;
 import com.espirometrias.mapper.PatientMapper;
 import com.espirometrias.model.Patient;
 import com.espirometrias.repository.PatientRepository;
@@ -21,12 +20,11 @@ public class PatientService {
         this.patientMapper = mapper;
     }
 
-    public PatientResponse create(PatientRequest patient)
+    public PatientDTO create(PatientDTO patient)
     {
         Patient p = patientMapper.toEntity(patient);
-        System.out.println(p);
         patientRepository.save(p);
-        return patientMapper.toResponse(p);
+        return patientMapper.toDTO(p);
     }
 
     public void delete(Long id)
@@ -36,24 +34,24 @@ public class PatientService {
         patientRepository.delete(p);
     }
 
-    public PatientResponse getById(Long id)
+    public PatientDTO getById(Long id)
     {
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient no found"));
-        return patientMapper.toResponse(p);
+        return patientMapper.toDTO(p);
     }
 
-    public List<PatientResponse> getPatients()
+    public List<PatientDTO> getPatients()
     {
         return patientRepository.findAll().stream()
-                .map(patientMapper::toResponse).toList();
+                .map(patientMapper::toDTO).toList();
     }
 
-    public PatientResponse editPatient(Long id, PatientRequest patient)
+    public PatientDTO editPatient(Long id, PatientDTO patient)
     {
         Patient p = patientMapper.toEntity(patient);
         p.setId(id);
         patientRepository.save(p);
-        return patientMapper.toResponse(p);
+        return patientMapper.toDTO(p);
     }
 }

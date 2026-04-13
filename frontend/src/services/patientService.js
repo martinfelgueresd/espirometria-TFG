@@ -1,10 +1,10 @@
 const API = "http://localhost:8080/patients";
 
 export const getPatients = () =>
-    fetch(`${API}/`).then(r => r.json());
+    fetch(`${API}`).then(r => r.json());
 
 export const createPatient = (patient) =>
-    fetch(`${API}/`, {
+    fetch(`${API}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patient)

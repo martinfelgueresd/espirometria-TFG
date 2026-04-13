@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "patients")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,21 +20,26 @@ public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(unique = true)
     private String personalId;
     private String name;
     private String surname;
-    private LocalDate birth_date;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
     private Integer age;
     private String gender;
     private Double height;
     private Double weight;
     private Double imc;
     private Boolean smoker;
-    private String ethnic_group;
+
+    @Column(name = "ethnic_group")
+    private String ethnicGroup;
 
     @OneToMany(mappedBy = "patient")
-    private List<Session> sessions = new ArrayList<>();
+    private List<Study> studies = new ArrayList<>();
 
     @PrePersist
     public void calculateImc()

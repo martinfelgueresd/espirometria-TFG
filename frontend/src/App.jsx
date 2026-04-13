@@ -3,7 +3,7 @@ import PatientForm from "./components/patients/PatientForm";
 import PatientList from "./components/patients/PatientList";
 import Navbar from "./components/layout/Navbar.jsx"
 import PatientDetail from "./components/patients/PatientDetail.jsx";
-import {uploadSession} from "./services/sessionService.js";
+import {uploadSession} from "./services/studyService.js";
 import {deletePatient} from "./services/patientService.js";
 import PatientEdit from "./components/patients/PatientEdit.jsx";
 

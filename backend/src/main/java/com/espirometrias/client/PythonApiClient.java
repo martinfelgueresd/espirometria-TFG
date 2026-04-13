@@ -1,6 +1,6 @@
 package com.espirometrias.client;
 
-import com.espirometrias.dto.SpirometryResponse;
+import com.espirometrias.dto.StudyDTO;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,17 +12,22 @@ public class PythonApiClient {
 
     private final WebClient webClient;
 
-    public PythonApiClient(WebClient webClient){
-        this.webClient = webClient;
+    public PythonApiClient() {
+        this.webClient = WebClient.builder()
+                .baseUrl("http://localhost:8000")
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(10 * 1024 * 1024))
+                .build();
     }
 
-    public SpirometryResponse analizar(MultipartFile xml){
+    public StudyDTO analizar(MultipartFile xml){
         return webClient.post()
                 .uri("/analizar")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData("file", xml.getResource()))
                 .retrieve()
-                .bodyToMono(SpirometryResponse.class)
+                .bodyToMono(StudyDTO.class)
                 .block();
     }
 }

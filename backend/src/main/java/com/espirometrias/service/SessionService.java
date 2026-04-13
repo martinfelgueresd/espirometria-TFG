@@ -1,6 +1,5 @@
 package com.espirometrias.service;
 
-import com.espirometrias.dto.SpirometryResponse;
 import com.espirometrias.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

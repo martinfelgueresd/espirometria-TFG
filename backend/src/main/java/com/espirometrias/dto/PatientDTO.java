@@ -1,26 +1,31 @@
 package com.espirometrias.dto;
 
-import jakarta.persistence.Column;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class PatientResponse {
+public class PatientDTO {
     private Long id;
-    @Column(unique = true)
     private String personalId;
     private String name;
     private String surname;
-    private LocalDate birth_date;
+
+    @JsonProperty("birth_date")
+    private LocalDate birthDate;
     private Integer age;
     private String gender;
     private Double height;
     private Double weight;
     private Double imc;
     private Boolean smoker;
-    private String ethnic_group;
+
+    @JsonProperty("ethnic_group")
+    private String ethnicGroup;
 }

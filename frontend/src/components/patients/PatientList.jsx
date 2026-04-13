@@ -81,7 +81,6 @@ function PatientList({ onPatientClicked, onUploadClicked, onDeleteClicked, onEdi
                                     <button className="border border-red-600 text-red-600 hover:bg-red-50 rounded-md px-3 py-1.5 text-xs font-medium"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        console.log(patient.id);
                                         setPatientToDelete(patient.id);}
                                     }>
                                         Eliminar
