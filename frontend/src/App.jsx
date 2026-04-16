@@ -3,7 +3,7 @@ import PatientForm from "./components/patients/PatientForm";
 import PatientList from "./components/patients/PatientList";
 import Navbar from "./components/layout/Navbar.jsx"
 import PatientDetail from "./components/patients/PatientDetail.jsx";
-import {uploadSession} from "./services/studyService.js";
+import {uploadGlobalSession, uploadSession} from "./services/studyService.js";
 import {deletePatient} from "./services/patientService.js";
 import PatientEdit from "./components/patients/PatientEdit.jsx";
 
@@ -11,9 +11,11 @@ function App() {
     const [view, setView] = useState("list");
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [refresh, setRefresh] = useState(0);
+    const [successMessage, setSuccessMessage] = useState(null);
 
-    const handlePatientCreated = () => {
-        setRefresh(r => r + 1); // fuerza recarga de la lista
+    const handlePatientCreated = (message) => {
+        setSuccessMessage(message);
+        setRefresh(r => r + 1);
         setView("list");
     };
 
@@ -26,9 +28,12 @@ function App() {
         await uploadSession(id, file);
     };
 
+    const handleUploadGlobal = async(file) => {
+        await uploadGlobalSession(file);
+    };
+
     const handleDelete = async(id) => {
-        await deletePatient(id)
-        setRefresh(r => r + 1);
+        await deletePatient(id);
     };
 
     const handleEdit = (patient) => {
@@ -36,7 +41,8 @@ function App() {
         setView("edit")
     }
 
-    const handlePatientEdited = () => {
+    const handlePatientEdited = (message) => {
+        setSuccessMessage(message);
         setRefresh(r => r + 1); // fuerza recarga de la lista
         setView("list");
     };
@@ -44,7 +50,14 @@ function App() {
     return (
         <div>
             <Navbar view={view} setView={setView} />
-            {view === "list" && <PatientList key={refresh} onPatientClicked={handlePatientClick} onUploadClicked={handleUpload} onDeleteClicked={handleDelete} onEditClicked={handleEdit}/>}
+
+            {view === "list" && <PatientList key={refresh} successMessage={successMessage}
+                                             onSuccessMessageShown={() => setSuccessMessage(null)}
+                                             onNewPatientClicked={() => setView("form")}
+                                             onPatientClicked={handlePatientClick} onUploadClicked={handleUpload}
+                                             onUploadGlobalClicked={handleUploadGlobal} onDeleteClicked={handleDelete}
+                                             onEditClicked={handleEdit}/>}
+
             {view === "form" && <PatientForm onPatientCreated={handlePatientCreated} />}
             {view === "detail" && <PatientDetail patient={selectedPatient} />}
             {view === "edit" && <PatientEdit patient={selectedPatient} onPatientEdited={handlePatientEdited}/>}

@@ -1,6 +1,7 @@
 package com.espirometrias.service;
 
 import com.espirometrias.dto.PatientDTO;
+import com.espirometrias.exception.DuplicatePatientException;
 import com.espirometrias.mapper.PatientMapper;
 import com.espirometrias.model.Patient;
 import com.espirometrias.repository.PatientRepository;
@@ -22,6 +23,8 @@ public class PatientService {
 
     public PatientDTO create(PatientDTO patient)
     {
+        if(patientRepository.existsByPersonalId(patient.getPersonalId()))
+            throw new DuplicatePatientException(patient.getPersonalId());
         Patient p = patientMapper.toEntity(patient);
         patientRepository.save(p);
         return patientMapper.toDTO(p);

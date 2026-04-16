@@ -12,11 +12,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class StudyDTO {
 
+    private String studyUUID;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private String operator;
     private String protocol;
-    private PatientDTO patient;
+    //private PatientDTO patient;
     private SessionDTO preSession;
     private SessionDTO postSession;
 }

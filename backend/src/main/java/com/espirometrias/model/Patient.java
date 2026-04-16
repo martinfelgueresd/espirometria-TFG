@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,15 +39,16 @@ public class Patient {
     @Column(name = "ethnic_group")
     private String ethnicGroup;
 
-    @OneToMany(mappedBy = "patient")
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     private List<Study> studies = new ArrayList<>();
 
     @PrePersist
-    public void calculateImc()
+    public void calculateImcAndAge()
     {
         if (height != null && weight != null && height > 0) {
             double resultado = weight / Math.pow(height / 100.0, 2);
             this.imc = Math.round(resultado * 100.0) / 100.0;
         }
+        this.age = Period.between(birthDate, LocalDate.now()).getYears();
     }
 }

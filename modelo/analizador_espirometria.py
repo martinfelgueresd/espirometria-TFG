@@ -188,10 +188,15 @@ def _parsear_sesion(root):
         if u:
             operador = u
 
+    session = root.find(".//E[@N='Session']")
+    session_row = session.find("E[@T='R']") if session else None
+    session_uuid = _get_attr(session_row, 'SessionUUIDKey') if session_row else None
+
     return {
-        'date':      fecha,
-        'operator':  operador,
-        'protocol':  protocolo,
+        'date':         fecha,
+        'operator':     operador,
+        'protocol':     protocolo,
+        'studyUUID':    session_uuid,
     }
 
 
@@ -406,6 +411,7 @@ def analizar_espirometria(xml_string: str) -> dict:
         'date':       sesion['date'],
         'operator':   sesion['operator'],
         'protocol':   sesion['protocol'],
+        'studyUUID': sesion['studyUUID'],
         'patient':    paciente,
         'preSession': {
             'type':          'PRE',

@@ -5,9 +5,10 @@ import com.espirometrias.model.Study;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {PatientMapper.class, SessionMapper.class})
+@Mapper(componentModel = "spring")
 public interface StudyMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "patient", ignore = true)
     Study toEntity(StudyDTO dto);
 }
