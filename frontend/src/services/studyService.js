@@ -1,4 +1,4 @@
-const API = "http://localhost:8080/study";
+const API = "http://localhost:8080/esp-IA-api/v1/studies";
 
 export const uploadSession = async (id, file) => {
     const formData = new FormData();

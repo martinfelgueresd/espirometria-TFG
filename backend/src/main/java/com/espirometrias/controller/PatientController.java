@@ -2,37 +2,38 @@ package com.espirometrias.controller;
 
 import com.espirometrias.dto.PatientDTO;
 import com.espirometrias.service.PatientService;
+import com.espirometrias.util.ApiConfig;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/patients")
+@RequiredArgsConstructor
+@RequestMapping(ApiConfig.API_BASE_PATH + "/patients")
 public class PatientController {
 
     private final PatientService patientService;
 
-    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }
-
     @PostMapping
-    public ResponseEntity<PatientDTO> create(@RequestBody PatientDTO patient)
+    public ResponseEntity<PatientDTO> create(@Valid @RequestBody PatientDTO patient)
     {
         return ResponseEntity.status(HttpStatus.CREATED).body(patientService.create(patient));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id)
+    public ResponseEntity<Void> delete(@PathVariable UUID id)
     {
         patientService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PatientDTO> editPatient(@PathVariable Long id, @RequestBody PatientDTO patient) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<PatientDTO> editPatient(@PathVariable UUID id, @RequestBody PatientDTO patient) {
         return ResponseEntity.ok(patientService.editPatient(id, patient));
     }
 
@@ -43,7 +44,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PatientDTO> getPatient(@PathVariable Long id)
+    public ResponseEntity<PatientDTO> getPatient(@PathVariable UUID id)
     {
         return ResponseEntity.ok(patientService.getById(id));
     }

@@ -5,21 +5,18 @@ import com.espirometrias.exception.DuplicatePatientException;
 import com.espirometrias.mapper.PatientMapper;
 import com.espirometrias.model.Patient;
 import com.espirometrias.repository.PatientRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PatientService {
 
     private final PatientRepository patientRepository;
     private final PatientMapper patientMapper;
-
-    public PatientService(PatientRepository repository, PatientMapper mapper)
-    {
-        this.patientRepository = repository;
-        this.patientMapper = mapper;
-    }
 
     public PatientDTO create(PatientDTO patient)
     {
@@ -30,14 +27,14 @@ public class PatientService {
         return patientMapper.toDTO(p);
     }
 
-    public void delete(Long id)
+    public void delete(UUID id)
     {
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient no found"));
         patientRepository.delete(p);
     }
 
-    public PatientDTO getById(Long id)
+    public PatientDTO getById(UUID id)
     {
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient no found"));
@@ -50,10 +47,16 @@ public class PatientService {
                 .map(patientMapper::toDTO).toList();
     }
 
-    public PatientDTO editPatient(Long id, PatientDTO patient)
+    public PatientDTO editPatient(UUID id, PatientDTO patient)
     {
-        Patient p = patientMapper.toEntity(patient);
-        p.setId(id);
+        Patient p = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        p.setHeight(patient.getHeight());
+        p.setWeight(patient.getWeight());
+        p.setSmoker(patient.getSmoker());
+        p.setEthnicGroup(patient.getEthnicGroup());
+
         patientRepository.save(p);
         return patientMapper.toDTO(p);
     }

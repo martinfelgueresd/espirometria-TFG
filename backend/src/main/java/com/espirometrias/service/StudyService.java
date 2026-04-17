@@ -11,6 +11,7 @@ import com.espirometrias.model.Patient;
 import com.espirometrias.model.Study;
 import com.espirometrias.repository.PatientRepository;
 import com.espirometrias.repository.StudyRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.WordUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,8 +21,10 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class StudyService {
 
     private final StudyRepository studyRepository;
@@ -29,18 +32,7 @@ public class StudyService {
     private final StudyMapper studyMapper;
     private final PythonApiClient pythonApiClient;
 
-    public StudyService(StudyRepository studyRepository,
-                        PatientRepository patientRepository,
-                        StudyMapper studyMapper,
-                        PythonApiClient pythonApiClient)
-    {
-        this.studyRepository = studyRepository;
-        this.patientRepository = patientRepository;
-        this.studyMapper = studyMapper;
-        this.pythonApiClient = pythonApiClient;
-    }
-
-    public void uploadStudy(Long patientId, MultipartFile file) {
+    public void uploadStudy(UUID patientId, MultipartFile file) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new PatientNotFoundException(patientId));
 

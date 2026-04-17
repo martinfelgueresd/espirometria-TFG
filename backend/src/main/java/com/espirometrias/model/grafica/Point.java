@@ -1,10 +1,13 @@
 package com.espirometrias.model.grafica;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "points")
@@ -14,9 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Point {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private UUID id = UuidCreator.getTimeOrderedEpoch();
     private Double x, y;
 
     @ManyToOne

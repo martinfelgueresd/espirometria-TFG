@@ -1,6 +1,7 @@
 package com.espirometrias.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "studies")
@@ -17,8 +19,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Study {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id = UuidCreator.getTimeOrderedEpoch();
 
     @Column(unique = true)
     private String studyUUID;

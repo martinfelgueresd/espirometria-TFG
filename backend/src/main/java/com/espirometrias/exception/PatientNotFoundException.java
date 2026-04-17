@@ -2,6 +2,8 @@ package com.espirometrias.exception;
 
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 public class PatientNotFoundException extends RuntimeException {
 
@@ -16,7 +18,7 @@ public class PatientNotFoundException extends RuntimeException {
         this.lastName = lastName;
     }
 
-    public PatientNotFoundException(Long id) {
+    public PatientNotFoundException(UUID id) {
         super("No existe ningún paciente con id: " + id);
         this.dni = null;
         this.firstName = null;

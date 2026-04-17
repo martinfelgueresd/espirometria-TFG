@@ -18,7 +18,6 @@ public class StudyDTO {
     private LocalDate date;
     private String operator;
     private String protocol;
-    //private PatientDTO patient;
     private SessionDTO preSession;
     private SessionDTO postSession;
 }

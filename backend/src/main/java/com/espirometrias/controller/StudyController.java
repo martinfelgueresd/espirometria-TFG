@@ -3,23 +3,23 @@ package com.espirometrias.controller;
 import com.espirometrias.exception.InvalidXmlException;
 import com.espirometrias.service.SessionService;
 import com.espirometrias.service.StudyService;
+import com.espirometrias.util.ApiConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/study")
+@RequiredArgsConstructor
+@RequestMapping(ApiConfig.API_BASE_PATH + "/studies")
 public class StudyController {
 
     private final StudyService studyService;
 
-    public StudyController(StudyService studyService)
-    {
-        this.studyService = studyService;
-    }
-
     @PostMapping("/upload/{id}")
-    public ResponseEntity<Void> uploadSpirometry(@PathVariable Long id, @RequestParam("file") MultipartFile file)
+    public ResponseEntity<Void> uploadSpirometry(@PathVariable UUID id, @RequestParam("file") MultipartFile file)
     {
         if(file.isEmpty())
             throw new InvalidXmlException("El fichero está vacío.");

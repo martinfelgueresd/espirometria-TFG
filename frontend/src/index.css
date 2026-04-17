@@ -3,3 +3,30 @@
 * {
     font-family: 'Poppins', sans-serif;
 }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.shake {
+    animation: shake 0.4s ease;
+    outline: none !important;
+}
+
+@layer components {
+    .input-base {
+        @apply w-full border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300;
+    }
+
+    .input-error {
+        @apply border-red-400 focus:ring-red-300;
+    }
+
+    .input-disabled {
+        @apply bg-gray-100 text-gray-400 cursor-not-allowed;
+    }
+}
