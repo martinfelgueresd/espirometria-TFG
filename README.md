@@ -24,11 +24,13 @@ EspirometrIA permite a profesionales sanitarios gestionar pacientes, subir prueb
 ### Estándares clínicos
 - [ATS/ERS Standardisation of Spirometry](https://www.atsjournals.org/doi/10.1183/13993003.00688-2022)
 
+## Decisiones técnicas
+- Utilización de UUID v7 en entidades en vez de UUID v4 o Long
+<img width="854" height="318" alt="{1FD74645-AE30-4ADE-907E-86E1ABAD1C5A}" src="https://github.com/user-attachments/assets/c8ecd6c3-4702-410e-8f9a-14cc0b66fee6" />
+
 ## Tecnologías
 
 **Frontend:** React, Tailwind CSS, Vite  
 **Backend:** Java, Spring Boot, Spring Security, JWT  
 **Base de datos:** PostgreSQL  
 **Modelo IA:** Python, FastAPI  
-
-## Estructura del proyecto
