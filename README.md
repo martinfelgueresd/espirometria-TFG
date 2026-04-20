@@ -20,6 +20,7 @@ EspirometrIA permite a profesionales sanitarios gestionar pacientes, subir prueb
 ### Guías y artículos
 - [Authentication with Spring Security and JWT](https://josealopez.dev/en/blog/authentication-with-spring-security-and-jwt)
 - [@RestController Guide in Spring Boot - Step-by-Step CRUD](https://josealopez.dev/en/blog/spring-boot-rest-controller-crud)
+- [Spring Security with WebSecurityConfig – Authentication and Authorization with Roles](https://josealopez.dev/en/blog/spring-security-authentication-and-authorization-guide)
 
 ### Estándares clínicos
 - [ATS/ERS Standardisation of Spirometry](https://www.atsjournals.org/doi/10.1183/13993003.00688-2022)
