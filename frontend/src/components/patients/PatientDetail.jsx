@@ -1,10 +1,8 @@
+import { buildSessionRow } from "../../utils/studyUtils.js";
+
 function PatientDetail({ patient }) {
 
-    const sessions = [
-        { id: 1, fecha: "10/05/2023", operador: "Cristina", protocolo: "Pre/Post", fvc_pre: 2.91, fvc_post: 3.13, fev1_pre: 2.13, fev1_post: 2.39, fev1_fvc_pre: 73.1, fev1_fvc_post: 76.3, r_broncodilatadora: false, grado_pre: "A", grado_post: "A" },
-        { id: 2, fecha: "15/09/2023", operador: "Marcos", protocolo: "Pre/Post", fvc_pre: 2.75, fvc_post: 2.98, fev1_pre: 1.89, fev1_post: 2.21, fev1_fvc_pre: 68.7, fev1_fvc_post: 74.2, r_broncodilatadora: true, grado_pre: "B", grado_post: "A" },
-        { id: 3, fecha: "02/02/2024", operador: "Cristina", protocolo: "Solo Pre", fvc_pre: 3.02, fvc_post: null, fev1_pre: 2.25, fev1_post: null, fev1_fvc_pre: 74.5, fev1_fvc_post: null, r_broncodilatadora: null, grado_pre: "A", grado_post: null },
-    ];
+    const sessions = (patient.studies ?? []).map(buildSessionRow);
 
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -47,14 +45,21 @@ function PatientDetail({ patient }) {
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 bg-white">
+                    {sessions.length === 0 && (
+                        <tr>
+                            <td colSpan={8} className="px-4 py-6 text-center text-sm text-gray-400">
+                                Este paciente todavía no tiene sesiones de espirometría registradas.
+                            </td>
+                        </tr>
+                    )}
                     {sessions.map(session => (
                         <tr key={session.id} className="hover:bg-gray-50 cursor-pointer">
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">{session.fecha}</td>
                             <td className="px-4 py-3 text-sm text-gray-500">{session.operador}</td>
                             <td className="px-4 py-3 text-sm text-gray-500">{session.protocolo}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fvc_pre} → {session.fvc_post ?? "—"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_pre} → {session.fev1_post ?? "—"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_fvc_pre}% → {session.fev1_fvc_post ? session.fev1_fvc_post + "%" : "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{session.fvc_pre ?? "—"} → {session.fvc_post ?? "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_pre ?? "—"} → {session.fev1_post ?? "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_fvc_pre ? session.fev1_fvc_pre + "%" : "—"} → {session.fev1_fvc_post ? session.fev1_fvc_post + "%" : "—"}</td>
                             <td className="px-4 py-3 text-sm">
                                 {session.r_broncodilatadora === null ? (
                                     <span className="text-gray-400">—</span>
@@ -68,7 +73,7 @@ function PatientDetail({ patient }) {
                                         </span>
                                 )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.grado_pre} / {session.grado_post ?? "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{session.grado_pre ?? "—"} / {session.grado_post ?? "—"}</td>
                         </tr>
                     ))}
                     </tbody>
