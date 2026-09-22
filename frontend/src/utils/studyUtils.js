@@ -1,7 +1,3 @@
-// Criterio ATS/ERS para respuesta broncodilatadora positiva: FEV1 sube >= 12% y >= 0.2 L respecto al basal.
-const BRONCHODILATOR_MIN_PCT = 12;
-const BRONCHODILATOR_MIN_ABS_L = 0.2;
-
 const paramScore = (maneuver) => {
     const fvc = getParamValue(maneuver, "FVC") ?? 0;
     const fev1 = getParamValue(maneuver, "FEV1") ?? 0;
@@ -25,15 +21,6 @@ export const selectBestManeuver = (session) => {
 export const getParamValue = (maneuver, paramName) =>
     maneuver?.params?.find(p => p.name === paramName)?.test ?? null;
 
-export const getBronchodilatorResponse = (fev1Pre, fev1Post) => {
-    if (fev1Pre == null || fev1Post == null) return null;
-
-    const diffAbs = fev1Post - fev1Pre;
-    const diffPct = fev1Pre > 0 ? (diffAbs / fev1Pre) * 100 : 0;
-
-    return diffAbs >= BRONCHODILATOR_MIN_ABS_L && diffPct >= BRONCHODILATOR_MIN_PCT;
-};
-
 export const formatDate = (isoDate) => {
     if (!isoDate) return "—";
     const [year, month, day] = isoDate.split("-");
@@ -45,22 +32,21 @@ export const buildSessionRow = (study) => {
     const bestPre = selectBestManeuver(study.preSession);
     const bestPost = selectBestManeuver(study.postSession);
 
-    const fev1Pre = getParamValue(bestPre, "FEV1");
-    const fev1Post = getParamValue(bestPost, "FEV1");
-
     return {
         id: study.studyUUID,
+        date: study.date,
         fecha: formatDate(study.date),
         operador: study.operator,
         protocolo: study.protocol,
         fvc_pre: getParamValue(bestPre, "FVC"),
         fvc_post: getParamValue(bestPost, "FVC"),
-        fev1_pre: fev1Pre,
-        fev1_post: fev1Post,
+        fev1_pre: getParamValue(bestPre, "FEV1"),
+        fev1_post: getParamValue(bestPost, "FEV1"),
         fev1_fvc_pre: getParamValue(bestPre, "FEV1_FVC_PCT"),
         fev1_fvc_post: getParamValue(bestPost, "FEV1_FVC_PCT"),
-        r_broncodilatadora: bestPost ? getBronchodilatorResponse(fev1Pre, fev1Post) : null,
         grado_pre: bestPre?.grade ?? null,
         grado_post: bestPost?.grade ?? null,
+        grado_sesion_pre: study.preSession?.sessionGrade ?? null,
+        grado_sesion_post: study.postSession?.sessionGrade ?? null,
     };
 };

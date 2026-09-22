@@ -35,7 +35,7 @@ function TableHeader({ sortField, sortDir, onSort }) {
     );
 }
 
-function PatientRow({ patient, onClick, onUpload, onEdit, onDelete }) {
+function PatientRow({ patient, onClick, onUpload, onEdit, onDelete, isUploading }) {
     const stop = (e, fn) => { e.stopPropagation(); fn(); };
 
     return (
@@ -54,8 +54,18 @@ function PatientRow({ patient, onClick, onUpload, onEdit, onDelete }) {
                 </span>
             </td>
             <td className="px-4 py-3 text-sm text-gray-500">
-                <button onClick={(e) => stop(e, onUpload)} className="inline-flex items-center rounded-md border border-green-600 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50">
-                    <Upload size={14} />
+                <button
+                    onClick={(e) => stop(e, onUpload)}
+                    disabled={isUploading}
+                    className="inline-flex items-center rounded-md border border-green-600 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50 disabled:opacity-50">
+                    {isUploading ? (
+                        <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                    ) : (
+                        <Upload size={14} />
+                    )}
                 </button>
             </td>
             <td className="px-4 py-3 text-sm text-gray-500">
@@ -72,7 +82,7 @@ function PatientRow({ patient, onClick, onUpload, onEdit, onDelete }) {
     );
 }
 
-function PatientTable({ patients, sortField, sortDir, onSort, onPatientClick, onUpload, onEdit, onDelete }) {
+function PatientTable({ patients, sortField, sortDir, onSort, onPatientClick, onUpload, onEdit, onDelete, uploadingId }) {
     return (
         <table className="min-w-full divide-y divide-gray-200">
             <TableHeader sortField={sortField} sortDir={sortDir} onSort={onSort} />
@@ -85,6 +95,7 @@ function PatientTable({ patients, sortField, sortDir, onSort, onPatientClick, on
                     onUpload={() => onUpload(patient.id)}
                     onEdit={() => onEdit(patient)}
                     onDelete={() => onDelete(patient)}
+                    isUploading={uploadingId === patient.id}
                 />
             ))}
             </tbody>

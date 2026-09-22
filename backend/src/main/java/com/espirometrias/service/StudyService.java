@@ -32,6 +32,12 @@ public class StudyService {
     private final StudyMapper studyMapper;
     private final PythonApiClient pythonApiClient;
 
+    public void deleteStudy(String studyUUID) {
+        Study study = studyRepository.findByStudyUUID(studyUUID)
+                .orElseThrow(() -> new RuntimeException("Study not found"));
+        studyRepository.delete(study);
+    }
+
     public void uploadStudy(UUID patientId, MultipartFile file) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new PatientNotFoundException(patientId));

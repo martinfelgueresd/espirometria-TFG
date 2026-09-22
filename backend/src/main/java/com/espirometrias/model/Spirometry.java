@@ -26,6 +26,8 @@ public class Spirometry {
     private Integer order;
     private LocalTime hour;
     private Boolean acceptable;
+    private String grade;
+    private String rejectionReason;
 
     @ManyToOne
     @JoinColumn(name = "session_id")

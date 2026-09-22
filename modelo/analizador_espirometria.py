@@ -243,9 +243,9 @@ def _parsear_signal_blocks(root):
                 for key in ['FEVC', 'Ref_FEVC',
                             'FEV1', 'Ref_FEV1',
                             'FEV1FEVC_PER', 'Ref_FEV1FEVC_PER',
-                            'PEF', 'MMEF', 'Ref_MMEF',
-                            'MEF25', 'MEF50', 'MEF75',
-                            'VEXT', 'FET']:
+                            'PEF', 'PEFLPM',
+                            'MMEF', 'Ref_MMEF',
+                            'PEFT', 'VEXT', 'DT90']:
                     raw = _get_attr(param_record, key)
                     params[key] = _to_float(raw)
 
@@ -330,18 +330,24 @@ def _construir_espirometrias(signals):
             'FVC':          ('FEVC',          'Ref_FEVC'),
             'FEV1':         ('FEV1',          'Ref_FEV1'),
             'FEV1_FVC_PCT': ('FEV1FEVC_PER',  'Ref_FEV1FEVC_PER'),
-            'PEF':          ('PEF',            None),
-            'MMEF':         ('MMEF',           'Ref_MMEF'),
-            'MEF25':        ('MEF25',          None),
-            'MEF50':        ('MEF50',          None),
-            'MEF75':        ('MEF75',          None),
-            'VEXT':         ('VEXT',           None),
-            'FET':          ('FET',            None),
+            'PEF':          ('PEF',           'PEFLPM'),
+            'MMEF':         ('MMEF',          'Ref_MMEF'),
+            'PEFT':         ('PEFT',          None),
+            'VEXT':         ('VEXT',          None),
+            'DT90':         ('DT90',          None),
         }
+
+        # PEFLPM viene del XML en L/min y PEF en L/s; se convierte a L/s antes de comparar
+        # para no dividir dos valores en unidades distintas (bug presente en dashboard.py).
+        PEFLPM_A_LPS = 60
 
         for name, (test_key, ref_key) in param_map.items():
             test_val = p.get(test_key)
             ref_val  = p.get(ref_key) if ref_key else None
+
+            if name == 'PEF' and ref_val is not None:
+                ref_val = ref_val / PEFLPM_A_LPS
+
             pct_val  = round(test_val / ref_val * 100, 2) if (test_val and ref_val) else None
 
             if test_val is not None:
@@ -372,6 +378,47 @@ def _construir_espirometrias(signals):
         })
 
     return espirometrias
+
+
+# ---------------------------------------------------------------------------
+# GRADO DE CALIDAD DE LA SESIÓN (criterio de repetibilidad ATS/ERS 2019)
+# ---------------------------------------------------------------------------
+
+def _valor_param(maniobra, nombre):
+    return next((p['test'] for p in maniobra['params'] if p['name'] == nombre and p['test'] is not None), None)
+
+
+def _calcular_grado_sesion(maniobras):
+    aceptables = [m for m in maniobras if m['acceptable']]
+    n_aceptables = len(aceptables)
+
+    if n_aceptables == 0:
+        return 'F'
+    if n_aceptables == 1:
+        return 'E'
+
+    fvcs  = sorted((v for v in (_valor_param(m, 'FVC') for m in aceptables) if v is not None), reverse=True)
+    fev1s = sorted((v for v in (_valor_param(m, 'FEV1') for m in aceptables) if v is not None), reverse=True)
+
+    rep_fvc  = abs(fvcs[0] - fvcs[1]) if len(fvcs) >= 2 else None
+    rep_fev1 = abs(fev1s[0] - fev1s[1]) if len(fev1s) >= 2 else None
+
+    if rep_fvc is not None and rep_fev1 is not None:
+        repetibilidad = max(rep_fvc, rep_fev1)
+    else:
+        repetibilidad = rep_fvc if rep_fvc is not None else rep_fev1
+
+    if repetibilidad is None:
+        return 'E'
+    if n_aceptables >= 3 and repetibilidad < 0.150:
+        return 'A'
+    if n_aceptables == 2 and repetibilidad < 0.150:
+        return 'B'
+    if repetibilidad < 0.200:
+        return 'C'
+    if repetibilidad < 0.250:
+        return 'D'
+    return 'E'
 
 
 # ---------------------------------------------------------------------------
@@ -415,10 +462,12 @@ def analizar_espirometria(xml_string: str) -> dict:
         'patient':    paciente,
         'preSession': {
             'type':          'PRE',
+            'sessionGrade':  _calcular_grado_sesion(pre_espiros),
             'spirometries':  pre_espiros,
         },
         'postSession': {
             'type':          'POST',
+            'sessionGrade':  _calcular_grado_sesion(post_espiros),
             'spirometries':  post_espiros,
         } if post_espiros else None,
     }

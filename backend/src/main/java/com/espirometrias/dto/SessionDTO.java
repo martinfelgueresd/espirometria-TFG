@@ -12,5 +12,6 @@ import java.util.List;
 public class SessionDTO {
 
     private String type;
+    private String sessionGrade;
     private List<SpirometryDTO> spirometries;
 }

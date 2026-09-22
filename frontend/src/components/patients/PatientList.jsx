@@ -24,6 +24,7 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
     const [patientToCreate, setPatientToCreate] = useState(null);
     const [patientExists, setPatientExists] = useState(null);
     const [isCreating, setIsCreating] = useState(false);
+    const [uploadingId, setUploadingId] = useState(null);
     const { toast, showToast, clearToast } = useToast();
     const { pickFile } = useFilePicker(".xml");
 
@@ -34,7 +35,7 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
     }));
 
     const { search, setSearch, filteredItems } = useSearch(patientsWithCount, filterPatient);
-    const { sortField, sortDir, sortedItems, handleSort, clearSort } = useSort(filteredItems);
+    const { sortField, sortDir, sortedItems, handleSort, clearSort } = useSort(filteredItems, "name", "asc");
     const { currentPage, totalPages, paginatedItems, from, to, nextPage, prevPage } = usePagination(sortedItems);
 
     useEffect(() => {
@@ -52,10 +53,15 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
         const file = await pickFile();
         if (!file) return;
         try {
+            setUploadingId(id);
             await onUploadClicked(id, file);
+            const updatedPatients = await getPatients();
+            setPatients(updatedPatients);
             showToast("Espirometría subida correctamente.", "success");
         } catch (error) {
             showToast(error.message, "error");
+        } finally {
+            setUploadingId(null);
         }
     };
 
@@ -121,7 +127,7 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-80 border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                     />
-                    {sortField && (
+                    {(sortField !== "name" || sortDir !== "asc") && (
                         <button
                             onClick={clearSort}
                             className="text-xs text-gray-400 hover:text-gray-600 underline">
@@ -155,6 +161,7 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
                     onUpload={handleUploadClick}
                     onEdit={onEditClicked}
                     onDelete={setPatientToDelete}
+                    uploadingId={uploadingId}
                 />
                 <Pagination
                     currentPage={currentPage}

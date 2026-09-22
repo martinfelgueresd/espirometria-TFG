@@ -21,6 +21,7 @@ public class Session {
     @Id
     private UUID id = UuidCreator.getTimeOrderedEpoch();
     private String type;
+    private String sessionGrade;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
     private List<Spirometry> spirometries;

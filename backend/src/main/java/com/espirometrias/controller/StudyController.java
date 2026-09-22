@@ -18,6 +18,13 @@ public class StudyController {
 
     private final StudyService studyService;
 
+    @DeleteMapping("/{studyUUID}")
+    public ResponseEntity<Void> delete(@PathVariable String studyUUID)
+    {
+        studyService.deleteStudy(studyUUID);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/upload/{id}")
     public ResponseEntity<Void> uploadSpirometry(@PathVariable UUID id, @RequestParam("file") MultipartFile file)
     {

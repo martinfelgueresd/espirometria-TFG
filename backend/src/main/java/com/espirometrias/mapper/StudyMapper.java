@@ -5,7 +5,7 @@ import com.espirometrias.model.Study;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = SessionMapper.class)
 public interface StudyMapper {
 
     @Mapping(target = "id", ignore = true)

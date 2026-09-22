@@ -3,8 +3,8 @@ import PatientForm from "./components/patients/PatientForm";
 import PatientList from "./components/patients/PatientList";
 import Navbar from "./components/layout/Navbar.jsx"
 import PatientDetail from "./components/patients/PatientDetail.jsx";
-import {uploadGlobalSession, uploadSession} from "./services/studyService.js";
-import {deletePatient} from "./services/patientService.js";
+import {deleteStudy, uploadGlobalSession, uploadSession} from "./services/studyService.js";
+import {deletePatient, getPatient} from "./services/patientService.js";
 import PatientEdit from "./components/patients/PatientEdit.jsx";
 
 function App() {
@@ -26,6 +26,18 @@ function App() {
 
     const handleUpload = async (id, file) => {
         await uploadSession(id, file);
+    };
+
+    const handleUploadFromDetail = async (id, file) => {
+        await uploadSession(id, file);
+        const updatedPatient = await getPatient(id);
+        setSelectedPatient(updatedPatient);
+    };
+
+    const handleDeleteStudy = async (studyId) => {
+        await deleteStudy(studyId);
+        const updatedPatient = await getPatient(selectedPatient.id);
+        setSelectedPatient(updatedPatient);
     };
 
     const handleUploadGlobal = async(file) => {
@@ -59,7 +71,7 @@ function App() {
                                              onEditClicked={handleEdit}/>}
 
             {view === "form" && <PatientForm onPatientCreated={handlePatientCreated} />}
-            {view === "detail" && <PatientDetail patient={selectedPatient} />}
+            {view === "detail" && <PatientDetail patient={selectedPatient} onEditClicked={handleEdit} onUploadClicked={handleUploadFromDetail} onDeleteStudyClicked={handleDeleteStudy} />}
             {view === "edit" && <PatientEdit patient={selectedPatient} onPatientEdited={handlePatientEdited}/>}
         </div>
     );

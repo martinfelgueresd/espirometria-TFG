@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 
-export function useSort(items) {
-    const [sortField, setSortField] = useState(null);
-    const [sortDir, setSortDir] = useState("asc");
+export function useSort(items, initialField = null, initialDir = "asc") {
+    const [sortField, setSortField] = useState(initialField);
+    const [sortDir, setSortDir] = useState(initialDir);
 
     const handleSort = (field) => {
         if (sortField === field) {
@@ -14,8 +14,8 @@ export function useSort(items) {
     };
 
     const clearSort = () => {
-        setSortField(null);
-        setSortDir("asc");
+        setSortField(initialField);
+        setSortDir(initialDir);
     };
 
     const sortedItems = useMemo(() => {

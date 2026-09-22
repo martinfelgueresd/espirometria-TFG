@@ -3,6 +3,9 @@ const API = "http://localhost:8080/esp-IA-api/v1/patients";
 export const getPatients = () =>
     fetch(`${API}`).then(r => r.json());
 
+export const getPatient = (id) =>
+    fetch(`${API}/${id}`).then(r => r.json());
+
 export const createPatient = async (patient) => {
     const response = await fetch(`${API}`, {
         method: "POST",
