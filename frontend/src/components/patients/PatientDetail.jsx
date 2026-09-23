@@ -14,7 +14,7 @@ const sessionGradeClasses = (grade) => {
     return "bg-gray-100 text-gray-500";
 };
 
-function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyClicked }) {
+function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyClicked, onStudyClicked }) {
 
     const sessions = (patient.studies ?? []).map(buildSessionRow);
     const { sortField, sortDir, sortedItems: sortedSessions, handleSort } = useSort(sessions, "date", "desc");
@@ -162,7 +162,10 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
                         </tr>
                     )}
                     {sortedSessions.map(session => (
-                        <tr key={session.id} className="hover:bg-gray-50 cursor-pointer">
+                        <tr
+                            key={session.id}
+                            onClick={() => onStudyClicked(patient.studies.find(s => s.studyUUID === session.id))}
+                            className="hover:bg-gray-50 cursor-pointer">
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">{session.fecha}</td>
                             <td className="px-4 py-3 text-sm text-gray-500">{session.protocolo}</td>
                             <td className="px-4 py-3 text-sm text-gray-500">{session.fvc_pre ?? "—"} → {session.fvc_post ?? "—"}</td>

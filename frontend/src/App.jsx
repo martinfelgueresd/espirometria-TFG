@@ -6,10 +6,12 @@ import PatientDetail from "./components/patients/PatientDetail.jsx";
 import {deleteStudy, uploadGlobalSession, uploadSession} from "./services/studyService.js";
 import {deletePatient, getPatient} from "./services/patientService.js";
 import PatientEdit from "./components/patients/PatientEdit.jsx";
+import StudyDetail from "./components/studies/StudyDetail.jsx";
 
 function App() {
     const [view, setView] = useState("list");
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [selectedStudy, setSelectedStudy] = useState(null);
     const [refresh, setRefresh] = useState(0);
     const [successMessage, setSuccessMessage] = useState(null);
 
@@ -48,6 +50,11 @@ function App() {
         await deletePatient(id);
     };
 
+    const handleStudyClick = (study) => {
+        setSelectedStudy(study);
+        setView("studyDetail");
+    };
+
     const handleEdit = (patient) => {
         setSelectedPatient(patient)
         setView("edit")
@@ -71,8 +78,9 @@ function App() {
                                              onEditClicked={handleEdit}/>}
 
             {view === "form" && <PatientForm onPatientCreated={handlePatientCreated} />}
-            {view === "detail" && <PatientDetail patient={selectedPatient} onEditClicked={handleEdit} onUploadClicked={handleUploadFromDetail} onDeleteStudyClicked={handleDeleteStudy} />}
+            {view === "detail" && <PatientDetail patient={selectedPatient} onEditClicked={handleEdit} onUploadClicked={handleUploadFromDetail} onDeleteStudyClicked={handleDeleteStudy} onStudyClicked={handleStudyClick} />}
             {view === "edit" && <PatientEdit patient={selectedPatient} onPatientEdited={handlePatientEdited}/>}
+            {view === "studyDetail" && <StudyDetail study={selectedStudy} onBackClicked={() => setView("detail")} />}
         </div>
     );
 }
