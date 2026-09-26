@@ -14,6 +14,8 @@ public interface SpirometryMapper {
     @Mapping(target = "session", ignore = true)
     Spirometry toEntity(SpirometryDTO dto);
 
+    SpirometryDTO toDTO(Spirometry spirometry);
+
     @AfterMapping
     default void linkChildren(@MappingTarget Spirometry spirometry) {
         if (spirometry.getCurves() != null) {

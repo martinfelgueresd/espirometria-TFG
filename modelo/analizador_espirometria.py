@@ -2,8 +2,13 @@
 Recibe el contenido del XML como string y devuelve el JSON estructurado
 con la sesión lista para ser enviada al backend.
 
+Este servicio es el único que lee el XML. Devuelve dos bloques:
+- patient: los datos del paciente tal y como vienen en el XML.
+- study: el estudio analizado (sesiones Pre/Post, maniobras, curvas y parámetros).
+
 El modelo de IA evalúa la aceptabilidad de cada maniobra (acceptable, grade,
-rejection_reason). La interpretación clínica queda delegada al backend.
+rejection_reason). Las reglas de dominio (mejor maniobra, valores de la sesión,
+interpretación clínica) quedan delegadas al backend.
 """
 
 import xml.etree.ElementTree as ET
@@ -45,7 +50,10 @@ def _preprocesar_volume_flow_from_mls(spxraw_mls, dt=0.01,
     if last_valid_idx - start_idx < min_length_after_start:
         return None, None
 
-    volume_seg = volume[start_idx:last_valid_idx]
+    # El volumen acumulado cuenta desde el principio de la grabación, que puede incluir
+    # un poco de inspiración o deriva antes de la maniobra. Se resta el del inicio para que
+    # la curva empiece en 0 L (volumen espirado) y las maniobras se puedan superponer.
+    volume_seg = volume[start_idx:last_valid_idx] - volume[start_idx]
     flow_seg   = flow_l[start_idx:last_valid_idx]
 
     return volume_seg, flow_seg
@@ -82,8 +90,9 @@ def _preprocesar_time_volume_from_mls(spxraw_mls, dt=0.01,
     if last_valid_idx - start_idx < min_length_after_start:
         return None, None
 
+    # Tiempo y volumen empiezan en 0 al inicio de la maniobra (ver _preprocesar_volume_flow_from_mls).
     time_seg   = time[start_idx:last_valid_idx] - time[start_idx]
-    volume_seg = volume[start_idx:last_valid_idx]
+    volume_seg = volume[start_idx:last_valid_idx] - volume[start_idx]
 
     if len(time_seg) < min_length_after_start:
         return None, None
@@ -120,6 +129,23 @@ def _to_int(value, default=None):
 # PARSEO DEL PACIENTE
 # ---------------------------------------------------------------------------
 
+# Grupo étnico según el modelo de predicción (RefSetID) que elige el operador en Medikro para calcular los
+# valores teóricos. EthnicGroupID no sirve: vale 3 en todos los XML de prueba aunque se usaron modelos distintos.
+# Comprobado recalculando con GLI-2012 los teóricos que trae el XML (Ref_FEVC, Ref_FEV1):
+#   20123  -> GLI-2012 caucásico    (19 de los 20 XML, error < 0,01 L)
+#   201215 -> GLI-2012 otro/mixto   (1 XML, error < 0,005 L)
+REFSET_ETNIA = {
+    '20123':  'caucasian',
+    '201215': 'other',
+}
+# Si el modelo no es uno de los conocidos se usa "other", que es lo que indica GLI cuando la etnia se desconoce.
+ETNIA_DESCONOCIDA = 'other'
+
+
+def _etnia_desde_modelo(ref_set_id):
+    return REFSET_ETNIA.get(ref_set_id, ETNIA_DESCONOCIDA)
+
+
 def _parsear_paciente(root):
     person = root.find(".//E[@N='Person']")
     if person is None:
@@ -130,26 +156,29 @@ def _parsear_paciente(root):
     last_name   = _get_attr(person, 'LastName', '')
     birth_date  = _get_attr(person, 'BirthDate', '')
     gender_raw  = _get_attr(person, 'Gender', '')
-    ethnic_raw  = _get_attr(person, 'EthnicGroupID', '')
 
-    altura = peso = None
+    altura = peso = modelo_persona = None
     for e in person.findall(".//E[@N='Custom']"):
         v = e.get('V', '')
         if v.startswith('Height='):
             altura = _to_float(v.split('=')[1])
         elif v.startswith('Weight='):
             peso = _to_float(v.split('=')[1])
+        elif v.startswith('RefSetID='):
+            modelo_persona = v.split('=')[1]
 
     session_data = root.find(".//E[@N='Data']")
     edad = _to_float(_get_attr(session_data, 'Age')) if session_data else None
+
+    # Modelo de predicción usado en la sesión; si no viene, el que tiene asignado el paciente.
+    modelo_sesion = _get_attr(session_data, 'RefSetID') if session_data else None
+    ref_set_id = modelo_sesion or modelo_persona
 
     imc = None
     if altura and peso and altura > 0:
         imc = round(peso / ((altura / 100) ** 2), 1)
 
     sexo_map  = {'0': 'F', '1': 'M'}
-    etnia_map = {'1': 'caucasian', '2': 'african_american', '3': 'caucasian',
-                 '4': 'asian_southeast', '5': 'asian_other', '6': 'other'}
 
     fumador_raw = _get_attr(session_data, 'Smoking') if session_data else None
 
@@ -166,7 +195,7 @@ def _parsear_paciente(root):
         'weight':        peso,
         'imc':           imc,
         'smoker':        fumador_raw == '1' if fumador_raw else None,
-        'ethnic_group':  etnia_map.get(ethnic_raw, ethnic_raw),
+        'ethnic_group':  _etnia_desde_modelo(ref_set_id),
     }
 
 
@@ -270,6 +299,19 @@ def _parsear_signal_blocks(root):
 # ACEPTABILIDAD POR MANIOBRA
 # ---------------------------------------------------------------------------
 
+# Criterio ATS/ERS 2019 de aceptabilidad al inicio de la maniobra: el volumen extrapolado (Vext) puede ser
+# como máximo el 5 % de la FVC o 0,100 L, lo que sea mayor (antes se usaba un límite fijo de 0,150 L).
+VEXT_MINIMO_L = 0.100
+VEXT_FRACCION_FVC = 0.05
+
+
+def _limite_vext(fvc):
+    """Vext máximo permitido para una maniobra con esa FVC (en litros)."""
+    if fvc is None:
+        return VEXT_MINIMO_L
+    return max(VEXT_FRACCION_FVC * fvc, VEXT_MINIMO_L)
+
+
 def _evaluar_maniobra(signal):
     spxraw_mls = signal['spxraw_mls']
     dt         = signal['dt']
@@ -285,9 +327,9 @@ def _evaluar_maniobra(signal):
 
     motivo = motivo_pred if motivo_pred else None
 
-    # Filtro determinista VEXT (criterio ATS: VEXT < 0.150 L)
+    # Filtro determinista del volumen extrapolado (Vext) con el criterio ATS/ERS 2019
     vext = params.get('VEXT')
-    if vext is not None and vext > 0.150:
+    if vext is not None and vext > _limite_vext(params.get('FEVC')):
         label  = 'D'
         motivo = 'vext_alto'
 
@@ -437,7 +479,11 @@ def analizar_espirometria(xml_string: str) -> dict:
 
     Devuelve
     --------
-    dict con claves: date, operator, protocol, patient, preSession, postSession.
+    dict con dos claves:
+    - patient: datos del paciente leídos del XML.
+    - study: studyUUID, date, operator, protocol, preSession y postSession.
+
+    Lanza ValueError si el XML no se puede leer.
     """
     try:
         root = ET.fromstring(xml_string)
@@ -455,19 +501,21 @@ def analizar_espirometria(xml_string: str) -> dict:
         (s['phase'] for s in signals if s['order'] == e['order']), None) == 'POST']
 
     return {
-        'date':       sesion['date'],
-        'operator':   sesion['operator'],
-        'protocol':   sesion['protocol'],
-        'studyUUID': sesion['studyUUID'],
-        'patient':    paciente,
-        'preSession': {
-            'type':          'PRE',
-            'sessionGrade':  _calcular_grado_sesion(pre_espiros),
-            'spirometries':  pre_espiros,
+        'patient': paciente,
+        'study': {
+            'studyUUID':  sesion['studyUUID'],
+            'date':       sesion['date'],
+            'operator':   sesion['operator'],
+            'protocol':   sesion['protocol'],
+            'preSession': {
+                'type':          'PRE',
+                'sessionGrade':  _calcular_grado_sesion(pre_espiros),
+                'spirometries':  pre_espiros,
+            },
+            'postSession': {
+                'type':          'POST',
+                'sessionGrade':  _calcular_grado_sesion(post_espiros),
+                'spirometries':  post_espiros,
+            } if post_espiros else None,
         },
-        'postSession': {
-            'type':          'POST',
-            'sessionGrade':  _calcular_grado_sesion(post_espiros),
-            'spirometries':  post_espiros,
-        } if post_espiros else None,
     }

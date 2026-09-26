@@ -7,40 +7,47 @@ import PatientTable from "./PatientTable.jsx";
 import Pagination from "./Pagination.jsx";
 import UploadPatientModal from "./UploadPatientModal.jsx";
 import { useToast } from "../../hooks/useToast.js";
-import { useSort } from "../../hooks/useSort.js";
-import { usePagination } from "../../hooks/usePagination.js";
-import { useSearch } from "../../hooks/useSearch.js";
+import { useDebounce } from "../../hooks/useDebounce.js";
 import { useFilePicker } from "../../hooks/useFilePicker.js";
 import { createPatientAndUpload } from "../../services/studyService.js";
 
-const filterPatient = (patient, search) =>
-    (patient.name + " " + patient.surname).toLowerCase().includes(search) ||
-    patient.personalId.toLowerCase().includes(search);
+const PAGE_SIZE = 10;
+const DEFAULT_SORT = { field: "name", dir: "asc" };
+const EMPTY_PAGE = { content: [], page: 0, totalElements: 0, totalPages: 0 };
 
 function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicked, onPatientClicked, onUploadClicked, onUploadGlobalClicked, onDeleteClicked, onEditClicked }) {
 
-    const [patients, setPatients] = useState([]);
+    const [patientsPage, setPatientsPage] = useState(EMPTY_PAGE);
+    const [page, setPage] = useState(0);
+    const [sort, setSort] = useState(DEFAULT_SORT);
+    const [search, setSearch] = useState("");
+    const [reloadKey, setReloadKey] = useState(0);
+    const debouncedSearch = useDebounce(search);
+
     const [patientToDelete, setPatientToDelete] = useState(null);
     const [patientToCreate, setPatientToCreate] = useState(null);
-    const [patientExists, setPatientExists] = useState(null);
     const [isCreating, setIsCreating] = useState(false);
     const [uploadingId, setUploadingId] = useState(null);
     const { toast, showToast, clearToast } = useToast();
     const { pickFile } = useFilePicker(".xml");
 
-    const patientsWithCount = patients.map(p => ({
-        ...p,
-        studyCount: p.studies?.length ?? 0,
-        status: (p.studies?.length ?? 0) === 0 ? "Nuevo" : "Activo"
-    }));
-
-    const { search, setSearch, filteredItems } = useSearch(patientsWithCount, filterPatient);
-    const { sortField, sortDir, sortedItems, handleSort, clearSort } = useSort(filteredItems, "name", "asc");
-    const { currentPage, totalPages, paginatedItems, from, to, nextPage, prevPage } = usePagination(sortedItems);
-
+    // Pide la página al backend cada vez que cambia la página, el orden, la búsqueda o se fuerza una recarga.
     useEffect(() => {
-        getPatients().then(setPatients);
-    }, []);
+        let ignore = false; // si el usuario ya ha pedido otra página, la respuesta antigua se descarta
+
+        getPatients({ page, size: PAGE_SIZE, sort: sort.field, dir: sort.dir, search: debouncedSearch })
+            .then(data => {
+                if (ignore) return;
+                // Si se ha borrado el último paciente de una página, se vuelve a la anterior.
+                if (data.content.length === 0 && data.page > 0) setPage(data.page - 1);
+                else setPatientsPage(data);
+            })
+            .catch(error => {
+                if (!ignore) showToast(error.message, "error");
+            });
+
+        return () => { ignore = true; };
+    }, [page, sort, debouncedSearch, reloadKey, showToast]);
 
     useEffect(() => {
         if (successMessage) {
@@ -49,14 +56,49 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
         }
     }, [successMessage]);
 
+    const reload = () => setReloadKey(key => key + 1);
+
+    const handleSearchChange = (value) => {
+        setSearch(value);
+        setPage(0);
+    };
+
+    const handleSort = (field) => {
+        setSort(current => current.field === field
+            ? { field, dir: current.dir === "asc" ? "desc" : "asc" }
+            : { field, dir: "asc" });
+        setPage(0);
+    };
+
+    const clearSort = () => {
+        setSort(DEFAULT_SORT);
+        setPage(0);
+    };
+
+    // Abrir o editar un paciente pide su detalle al backend: si falla, se avisa aquí.
+    const handlePatientClick = async (patient) => {
+        try {
+            await onPatientClicked(patient);
+        } catch (error) {
+            showToast(error.message, "error");
+        }
+    };
+
+    const handleEditClick = async (patient) => {
+        try {
+            await onEditClicked(patient);
+        } catch (error) {
+            showToast(error.message, "error");
+        }
+    };
+
     const handleUploadClick = async (id) => {
         const file = await pickFile();
         if (!file) return;
         try {
             setUploadingId(id);
             await onUploadClicked(id, file);
-            const updatedPatients = await getPatients();
-            setPatients(updatedPatients);
+            reload();
             showToast("Espirometría subida correctamente.", "success");
         } catch (error) {
             showToast(error.message, "error");
@@ -70,12 +112,13 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
         if (!file) return;
         try {
             await onUploadGlobalClicked(file);
+            reload();
             showToast("Espirometría subida correctamente.", "success");
         } catch (error) {
-            if (error.type === "PATIENT_NOT_FOUND") {
-                setPatientToCreate({ dni: error.dni, firstName: error.firstName, lastName: error.lastName, file });
-            } else if (error.type === "PATIENT_EXISTS") {
-                setPatientExists({ dni: error.dni, firstName: error.firstName, lastName: error.lastName, file });
+            // Si el paciente del XML no está registrado, se ofrece crearlo con los datos del XML.
+            if (error.code === "PATIENT_NOT_FOUND") {
+                const { dni, firstName, lastName } = error.details;
+                setPatientToCreate({ dni, firstName, lastName, file });
             } else {
                 showToast(error.message, "error");
             }
@@ -85,7 +128,7 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
     const handleDeleteConfirm = async () => {
         try {
             await onDeleteClicked(patientToDelete.id);
-            setPatients(patients.filter(p => p.id !== patientToDelete.id));
+            reload();
             showToast("Paciente eliminado correctamente.", "success");
         } catch (error) {
             showToast(error.message, "error");
@@ -93,21 +136,22 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
         setPatientToDelete(null);
     };
 
-    const handleUploadConfirm = async (patientData, successMessage) => {
+    const handleCreateConfirm = async () => {
         try {
             setIsCreating(true);
-            await createPatientAndUpload(patientData.file);
-            const updatedPatients = await getPatients();
-            setPatients(updatedPatients);
-            showToast(successMessage, "success");
+            await createPatientAndUpload(patientToCreate.file);
+            reload();
+            showToast("Paciente creado y espirometría asociada correctamente.", "success");
         } catch (error) {
             showToast(error.message, "error");
         } finally {
             setIsCreating(false);
             setPatientToCreate(null);
-            setPatientExists(null);
         }
     };
+
+    const { content: patients, totalElements, totalPages } = patientsPage;
+    const firstIndex = patientsPage.page * PAGE_SIZE;
 
     return (
         <div className="p-4">
@@ -124,10 +168,10 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
                         type="text"
                         placeholder="Buscar por nombre o DNI..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="w-80 border border-gray-200 rounded-lg px-3 h-9 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                     />
-                    {(sortField !== "name" || sortDir !== "asc") && (
+                    {(sort.field !== DEFAULT_SORT.field || sort.dir !== DEFAULT_SORT.dir) && (
                         <button
                             onClick={clearSort}
                             className="text-xs text-gray-400 hover:text-gray-600 underline">
@@ -153,24 +197,24 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
 
             <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
                 <PatientTable
-                    patients={paginatedItems}
-                    sortField={sortField}
-                    sortDir={sortDir}
+                    patients={patients}
+                    sortField={sort.field}
+                    sortDir={sort.dir}
                     onSort={handleSort}
-                    onPatientClick={onPatientClicked}
+                    onPatientClick={handlePatientClick}
                     onUpload={handleUploadClick}
-                    onEdit={onEditClicked}
+                    onEdit={handleEditClick}
                     onDelete={setPatientToDelete}
                     uploadingId={uploadingId}
                 />
                 <Pagination
-                    currentPage={currentPage}
+                    currentPage={patientsPage.page + 1}
                     totalPages={totalPages}
-                    from={from}
-                    to={to}
-                    total={sortedItems.length}
-                    onPrev={prevPage}
-                    onNext={nextPage}
+                    from={totalElements === 0 ? 0 : firstIndex + 1}
+                    to={firstIndex + patients.length}
+                    total={totalElements}
+                    onPrev={() => setPage(p => p - 1)}
+                    onNext={() => setPage(p => p + 1)}
                 />
             </div>
 
@@ -190,17 +234,8 @@ function PatientList({ successMessage, onSuccessMessageShown, onNewPatientClicke
 
             <UploadPatientModal
                 data={patientToCreate}
-                type="NOT_FOUND"
                 onCancel={() => setPatientToCreate(null)}
-                onConfirm={() => handleUploadConfirm(patientToCreate, "Paciente creado y espirometría asociada correctamente.")}
-                loading={isCreating}
-            />
-
-            <UploadPatientModal
-                data={patientExists}
-                type="EXISTS"
-                onCancel={() => setPatientExists(null)}
-                onConfirm={() => handleUploadConfirm(patientExists, "Espirometría asociada correctamente.")}
+                onConfirm={handleCreateConfirm}
                 loading={isCreating}
             />
 

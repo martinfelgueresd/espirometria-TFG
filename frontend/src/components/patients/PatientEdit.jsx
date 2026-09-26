@@ -1,5 +1,7 @@
 import { editPatient } from "../../services/patientService";
 import { usePatientForm } from "../../hooks/usePatientForm.js";
+import { useToast } from "../../hooks/useToast.js";
+import Toast from "../common/Toast.jsx";
 import FormField from "../common/FormField.jsx";
 import FieldWrapper from "../common/FieldWrapper.jsx";
 import Button from "../common/Button.jsx";
@@ -17,6 +19,7 @@ function PatientEdit({ patient, onPatientEdited }) {
         smoker: patient.smoker,
         ethnic_group: patient.ethnic_group
     });
+    const { toast, showToast, clearToast } = useToast();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,8 +27,10 @@ function PatientEdit({ patient, onPatientEdited }) {
             const { height, weight, smoker, ethnic_group } = form;
             await editPatient({ height, weight, smoker, ethnic_group }, patient.id);
             onPatientEdited("Paciente editado correctamente.");
-        } catch (errors) {
-            setErrors(errors);
+        } catch (error) {
+            // Se marcan los campos con error (si los hay) y siempre se muestra el mensaje del error.
+            setErrors(error.fieldErrors ?? {});
+            showToast(error.message, "error");
         }
     };
 
@@ -34,6 +39,8 @@ function PatientEdit({ patient, onPatientEdited }) {
 
     return (
         <div className="p-6 max-w-3xl mx-auto">
+            <Toast message={toast?.message} type={toast?.type} onClose={clearToast} />
+
             <h1 className="text-3xl font-bold text-gray-800 text-center mt-8 mb-2">Editar Paciente</h1>
             <p className="text-center text-sm text-gray-500 mb-8">Rellena la información del paciente debajo</p>
 

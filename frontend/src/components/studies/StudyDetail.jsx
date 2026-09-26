@@ -1,4 +1,9 @@
-import { selectBestManeuver, getParamValue, formatDate } from "../../utils/studyUtils.js";
+import { useEffect, useState } from "react";
+import { formatDate } from "../../utils/studyUtils.js";
+import { buildComparisonSeries } from "../../utils/chartUtils.js";
+import { getStudy } from "../../services/studyService.js";
+import CurvePairChart from "./CurvePairChart.jsx";
+import PhaseSection from "./PhaseSection.jsx";
 
 const sessionGradeClasses = (grade) => {
     if (grade === "A" || grade === "B") return "bg-green-100 text-green-700";
@@ -7,16 +12,9 @@ const sessionGradeClasses = (grade) => {
     return "bg-gray-100 text-gray-500";
 };
 
-const GraphPlaceholder = ({ text }) => (
-    <div className="h-48 flex items-center justify-center rounded-lg border border-dashed border-gray-300 text-sm text-gray-400">
-        {text}
-    </div>
-);
-
+// Resumen de una sesión. Todos los valores llegan calculados del backend: aquí solo se muestran.
 function SessionSummaryCard({ title, session }) {
-    const maneuvers = session?.spirometries ?? [];
-    const acceptedCount = maneuvers.filter(m => m.acceptable).length;
-    const best = selectBestManeuver(session);
+    const maneuverCount = session?.maneuverCount ?? 0;
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -27,23 +25,23 @@ function SessionSummaryCard({ title, session }) {
                 </span>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-                {maneuvers.length === 0
+                {maneuverCount === 0
                     ? "Sin maniobras registradas"
-                    : `${acceptedCount} de ${maneuvers.length} maniobras aceptables`}
+                    : `${session.acceptableCount} de ${maneuverCount} maniobras aceptables`}
             </p>
             <div className="grid grid-cols-3 gap-4">
                 <div>
                     <p className="text-sm text-gray-500">FVC</p>
-                    <p className="text-sm font-medium text-gray-900">{getParamValue(best, "FVC") ?? "—"}</p>
+                    <p className="text-sm font-medium text-gray-900">{session?.fvc ?? "—"}</p>
                 </div>
                 <div>
                     <p className="text-sm text-gray-500">FEV1</p>
-                    <p className="text-sm font-medium text-gray-900">{getParamValue(best, "FEV1") ?? "—"}</p>
+                    <p className="text-sm font-medium text-gray-900">{session?.fev1 ?? "—"}</p>
                 </div>
                 <div>
                     <p className="text-sm text-gray-500">FEV1/FVC</p>
                     <p className="text-sm font-medium text-gray-900">
-                        {getParamValue(best, "FEV1_FVC_PCT") ? getParamValue(best, "FEV1_FVC_PCT") + "%" : "—"}
+                        {session?.fev1Fvc ? session.fev1Fvc + "%" : "—"}
                     </p>
                 </div>
             </div>
@@ -51,58 +49,41 @@ function SessionSummaryCard({ title, session }) {
     );
 }
 
-function ManeuverTable({ maneuvers }) {
-    if (!maneuvers || maneuvers.length === 0) {
-        return <p className="text-sm text-gray-400">Sin maniobras registradas en esta fase.</p>;
-    }
+// Comparación de la mejor maniobra de cada fase. Solo tiene sentido si las dos fases tienen alguna maniobra
+// aceptable: si una no la tiene, el backend no le asigna mejor maniobra y se explica por qué no se compara.
+function ComparisonSection({ preSession, postSession }) {
+    const phasesWithoutBest = [["Pre", preSession], ["Post", postSession]]
+        .filter(([, session]) => session?.bestManeuverOrder == null)
+        .map(([label]) => label);
 
     return (
-        <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-            <tr>
-                {["Orden", "Hora", "Aceptable", "Grado", "Motivo"].map(h => (
-                    <th key={h} className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                        {h}
-                    </th>
-                ))}
-            </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
-            {maneuvers.map(m => (
-                <tr key={m.order} className="hover:bg-gray-50 cursor-pointer">
-                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{m.order}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{m.hour}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{m.acceptable ? "Sí" : "No"}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{m.grade ?? "—"}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{m.rejection_reason ?? "—"}</td>
-                </tr>
-            ))}
-            </tbody>
-        </table>
-    );
-}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-800">Comparación Pre vs Post</h2>
+            <p className="text-sm text-gray-500 mb-4">Mejor maniobra de cada fase</p>
 
-function PhaseSection({ title, session }) {
-    return (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">{title}</h2>
-            <div className="mb-6">
-                <GraphPlaceholder text="Aquí irá la gráfica Flujo-Volumen con las maniobras de esta fase superpuestas" />
-            </div>
-            <ManeuverTable maneuvers={session?.spirometries} />
+            {phasesWithoutBest.length === 0 && (
+                <CurvePairChart series={buildComparisonSeries(preSession, postSession)} showLegend />
+            )}
+            {phasesWithoutBest.length === 1 && (
+                <p className="text-sm text-gray-400">
+                    No se puede comparar: la fase {phasesWithoutBest[0]} no tiene ninguna maniobra aceptable.
+                </p>
+            )}
+            {phasesWithoutBest.length === 2 && (
+                <p className="text-sm text-gray-400">
+                    No se puede comparar: ninguna de las dos fases tiene maniobras aceptables.
+                </p>
+            )}
         </div>
     );
 }
 
-function StudyDetail({ study, onBackClicked }) {
-    return (
-        <div className="max-w-6xl mx-auto p-6">
-            <button
-                onClick={onBackClicked}
-                className="text-sm text-blue-600 hover:underline mt-8 mb-6 inline-block">
-                ← Volver al paciente
-            </button>
+function StudyContent({ study }) {
+    // Hay estudios sin sesión Post: entonces no se muestran ni la comparación ni la sección de esa fase.
+    const hasPostSession = (study.postSession?.maneuverCount ?? 0) > 0;
 
+    return (
+        <>
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-800">Estudio del {formatDate(study.date)}</h1>
                 <p className="text-sm text-gray-500 mt-1">Operador: {study.operator} · Protocolo: {study.protocol}</p>
@@ -113,15 +94,43 @@ function StudyDetail({ study, onBackClicked }) {
                 <SessionSummaryCard title="Post" session={study.postSession} />
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Comparación Pre vs Post</h2>
-                <GraphPlaceholder text="Aquí irá la gráfica comparando la mejor maniobra de pre y de post" />
-            </div>
+            {hasPostSession && <ComparisonSection preSession={study.preSession} postSession={study.postSession} />}
 
             <div className="flex flex-col gap-6">
                 <PhaseSection title="Fase Pre" session={study.preSession} />
-                <PhaseSection title="Fase Post" session={study.postSession} />
+                {hasPostSession && <PhaseSection title="Fase Post" session={study.postSession} />}
             </div>
+        </>
+    );
+}
+
+// Detalle de un estudio: pide al backend el estudio completo (resumen de las sesiones, maniobras,
+// curvas y parámetros) y lo muestra.
+function StudyDetail({ studyUUID, onBackClicked }) {
+    const [study, setStudy] = useState(null);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        let ignore = false; // si se cambia de estudio antes de que llegue la respuesta, se descarta
+
+        getStudy(studyUUID)
+            .then(data => { if (!ignore) setStudy(data); })
+            .catch(e => { if (!ignore) setError(e.message); });
+
+        return () => { ignore = true; };
+    }, [studyUUID]);
+
+    return (
+        <div className="max-w-6xl mx-auto p-6">
+            <button
+                onClick={onBackClicked}
+                className="text-sm text-blue-600 hover:underline mt-8 mb-6 inline-block">
+                ← Volver al paciente
+            </button>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            {!error && !study && <p className="text-sm text-gray-400">Cargando estudio…</p>}
+            {study && <StudyContent study={study} />}
         </div>
     );
 }

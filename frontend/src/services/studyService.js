@@ -1,65 +1,32 @@
+import { request, requestJson } from "./apiClient.js";
+
 const API = "http://localhost:8080/esp-IA-api/v1/studies";
 
-export const deleteStudy = async (id) => {
-    await fetch(`${API}/${id}`, { method: "DELETE" });
-};
+// Todas las funciones lanzan un ApiError con un mensaje listo para mostrar si la petición falla.
 
-export const uploadSession = async (id, file) => {
+// Estudio completo (maniobras, curvas y parámetros) para el detalle del estudio.
+export const getStudy = (studyUUID) =>
+    requestJson(`${API}/${studyUUID}`);
+
+export const deleteStudy = (studyUUID) =>
+    request(`${API}/${studyUUID}`, { method: "DELETE" });
+
+// Envía el XML como formulario multipart en el campo "file".
+const uploadXml = (url, file) => {
     const formData = new FormData();
     formData.append("file", file);
-
-    const response = await fetch(`${API}/upload/${id}`, {
-        method: "POST",
-        body: formData,
-    });
-
-    if (response.status === 409) {
-        const message = await response.text();
-        throw new Error(message);
-    }
-
-    if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
-    }
+    return request(url, { method: "POST", body: formData });
 };
 
-export const uploadGlobalSession = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
+// Sube el XML a un paciente concreto.
+export const uploadSession = (patientId, file) =>
+    uploadXml(`${API}/upload/${patientId}`, file);
 
-    const response = await fetch(`${API}/upload`, {
-        method: "POST",
-        body: formData,
-    });
+// Sube el XML buscando al paciente por su DNI. Si no está registrado, el ApiError trae
+// code "PATIENT_NOT_FOUND" y sus datos (dni, firstName, lastName) en details.
+export const uploadGlobalSession = (file) =>
+    uploadXml(`${API}/upload`, file);
 
-    if (response.status === 404) {
-        const data = await response.json();
-        throw { type: "PATIENT_NOT_FOUND", ...data };
-    }
-
-    if (response.status === 409) {
-        const data = await response.text();
-        throw { type: "PATIENT_EXISTS", ...data };
-    }
-
-    if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
-    }
-};
-
-export const createPatientAndUpload = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch(`${API}/upload/create-and-upload`, {
-        method: "POST",
-        body: formData,
-    });
-
-    if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
-    }
-};
+// Sube el XML y crea el paciente con los datos del XML si todavía no existe.
+export const createPatientAndUpload = (file) =>
+    uploadXml(`${API}/upload/create-and-upload`, file);

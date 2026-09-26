@@ -8,8 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,8 +24,13 @@ public class Curve {
     private UUID id = UuidCreator.getTimeOrderedEpoch();
     private CurveType curveType;
 
-    @OneToMany(mappedBy = "curve", cascade = CascadeType.ALL)
-    private List<Point> points;
+    // Coordenadas de los puntos: el punto i es (x[i], y[i]). Se guardan como dos arrays de PostgreSQL en la
+    // propia fila de la curva, en lugar de una fila por punto: un estudio pasa de ~11.000 filas a unas decenas.
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private double[] x;
+
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private double[] y;
 
     @ManyToOne
     @JoinColumn(name = "spirometry_id")

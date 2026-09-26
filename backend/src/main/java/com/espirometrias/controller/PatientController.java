@@ -1,6 +1,9 @@
 package com.espirometrias.controller;
 
+import com.espirometrias.dto.PageDTO;
 import com.espirometrias.dto.PatientDTO;
+import com.espirometrias.dto.PatientSummaryDTO;
+import com.espirometrias.dto.PatientUpdateDTO;
 import com.espirometrias.service.PatientService;
 import com.espirometrias.util.ApiConfig;
 import jakarta.validation.Valid;
@@ -9,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,14 +35,19 @@ public class PatientController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PatientDTO> editPatient(@PathVariable UUID id, @RequestBody PatientDTO patient) {
+    public ResponseEntity<PatientDTO> editPatient(@PathVariable UUID id, @Valid @RequestBody PatientUpdateDTO patient) {
         return ResponseEntity.ok(patientService.editPatient(id, patient));
     }
 
     @GetMapping
-    public ResponseEntity<List<PatientDTO>> getPatients()
+    public ResponseEntity<PageDTO<PatientSummaryDTO>> getPatients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sort,
+            @RequestParam(defaultValue = "asc") String dir,
+            @RequestParam(defaultValue = "") String search)
     {
-        return ResponseEntity.ok(patientService.getPatients());
+        return ResponseEntity.ok(patientService.getPatients(page, size, sort, dir, search));
     }
 
     @GetMapping("/{id}")

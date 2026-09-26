@@ -1,35 +1,19 @@
-const API = "http://localhost:8080/esp-IA-api/v1/patients";
+import { request, requestJson } from "./apiClient.js";
 
-export const getPatients = () =>
-    fetch(`${API}`).then(r => r.json());
+const API = "http://localhost:8080/esp-IA-api/v1/patients";
+const JSON_HEADERS = { "Content-Type": "application/json" };
+
+export const getPatients = ({ page, size, sort, dir, search }) =>
+    requestJson(`${API}?${new URLSearchParams({ page, size, sort, dir, search })}`);
 
 export const getPatient = (id) =>
-    fetch(`${API}/${id}`).then(r => r.json());
+    requestJson(`${API}/${id}`);
 
-export const createPatient = async (patient) => {
-    const response = await fetch(`${API}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patient)
-    });
+export const createPatient = (patient) =>
+    request(API, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(patient)});
 
-    if (!response.ok) {
-        throw await response.json();
-    }
-};
+export const editPatient = (formData, id) =>
+    request(`${API}/${id}`, { method: "PATCH", headers: JSON_HEADERS, body: JSON.stringify(formData)});
 
-export const editPatient = async (formData, id) => {
-    const response = await fetch(`${API}/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-    });
-
-    if (!response.ok) {
-        throw await response.json();
-    }
-};
-
-export const deletePatient = async (id) => {
-    await fetch(`${API}/${id}`, { method: "DELETE" });
-};
+export const deletePatient = (id) =>
+    request(`${API}/${id}`, { method: "DELETE" });

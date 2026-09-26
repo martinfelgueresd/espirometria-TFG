@@ -1,4 +1,5 @@
 import { Upload, Pencil, Trash2 } from "lucide-react";
+import { PATIENT_STATUS_LABELS } from "../../constants/patientOptions.js";
 
 const COLUMNS = [
     { label: "DNI", field: "personalId" },
@@ -48,9 +49,9 @@ function PatientRow({ patient, onClick, onUpload, onEdit, onDelete, isUploading 
             <td className="px-4 py-3 text-sm text-gray-500">{patient.studyCount}</td>
             <td className="px-4 py-3 text-sm text-gray-500">
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    patient.status === "Nuevo" ? "bg-gray-100 text-gray-600" : "bg-green-100 text-green-700"
+                    patient.status === "NEW" ? "bg-gray-100 text-gray-600" : "bg-green-100 text-green-700"
                 }`}>
-                    {patient.status}
+                    {PATIENT_STATUS_LABELS[patient.status]}
                 </span>
             </td>
             <td className="px-4 py-3 text-sm text-gray-500">

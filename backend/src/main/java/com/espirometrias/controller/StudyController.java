@@ -1,7 +1,7 @@
 package com.espirometrias.controller;
 
+import com.espirometrias.dto.StudyDTO;
 import com.espirometrias.exception.InvalidXmlException;
-import com.espirometrias.service.SessionService;
 import com.espirometrias.service.StudyService;
 import com.espirometrias.util.ApiConfig;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,13 @@ import java.util.UUID;
 public class StudyController {
 
     private final StudyService studyService;
+
+    // Estudio completo (con maniobras, curvas y parámetros) para el detalle del estudio.
+    @GetMapping("/{studyUUID}")
+    public ResponseEntity<StudyDTO> getStudy(@PathVariable String studyUUID)
+    {
+        return ResponseEntity.ok(studyService.getStudy(studyUUID));
+    }
 
     @DeleteMapping("/{studyUUID}")
     public ResponseEntity<Void> delete(@PathVariable String studyUUID)
@@ -39,7 +46,7 @@ public class StudyController {
     public ResponseEntity<Void> uploadSpirometry(@RequestParam("file") MultipartFile file)
     {
         if(file.isEmpty())
-            throw new IllegalArgumentException("El fichero está vacío.");
+            throw new InvalidXmlException("El fichero está vacío.");
 
         studyService.uploadStudy(file);
         return ResponseEntity.noContent().build();

@@ -11,4 +11,6 @@ public interface ParamMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "spirometry", ignore = true)
     Param toEntity(ParamDTO dto);
+
+    ParamDTO toDTO(Param param);
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]*$/;
+// Mismos caracteres que admite el backend: letras de cualquier idioma, espacios, guiones y apóstrofos.
+const NAME_REGEX = /^[\p{L} '’-]*$/u;
 const ID_REGEX = /^[a-zA-Z0-9]*$/;
 const SHAKE_DURATION = 400;
 

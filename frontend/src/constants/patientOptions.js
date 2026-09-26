@@ -15,3 +15,9 @@ export const SMOKER_OPTIONS = [
     { value: "true", label: "Sí" },
     { value: "false", label: "No" }
 ];
+
+// Texto de cada estado del paciente. El estado lo decide el backend (NEW si no tiene estudios, ACTIVE si tiene alguno).
+export const PATIENT_STATUS_LABELS = {
+    NEW: "Nuevo",
+    ACTIVE: "Activo"
+};

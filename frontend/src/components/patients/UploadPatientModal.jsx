@@ -1,40 +1,22 @@
 import Modal from "../common/Modal.jsx";
 
-function UploadPatientModal({ data, type, onCancel, onConfirm, loading }) {
+// Se muestra al subir un XML de un paciente que no está registrado: ofrece crearlo con los datos del XML.
+function UploadPatientModal({ data, onCancel, onConfirm, loading }) {
     if (!data) return null;
-
-    const config = {
-        NOT_FOUND: {
-            title: "Paciente no encontrado",
-            confirmText: "Crear paciente",
-            loadingText: "Creando...",
-            message: "No existe el paciente",
-            question: "¿Deseas crearlo automáticamente?"
-        },
-        EXISTS: {
-            title: "Paciente ya registrado",
-            confirmText: "Asociar espirometría",
-            loadingText: "Asociando...",
-            message: "Ya existe el paciente",
-            question: "¿Deseas asociarle esta espirometría?"
-        }
-    };
-
-    const { title, confirmText, loadingText, message, question } = config[type];
 
     return (
         <Modal
-            title={title}
+            title="Paciente no encontrado"
             onCancel={onCancel}
             onConfirm={onConfirm}
-            confirmText={confirmText}
-            loadingText={loadingText}
+            confirmText="Crear paciente"
+            loadingText="Creando..."
             confirmStyle="primary"
             loading={loading}>
-            {message}{" "}
+            No existe el paciente{" "}
             <strong className="whitespace-nowrap">
                 {data.firstName} {data.lastName} (DNI: {data.dni})
-            </strong>. {question}
+            </strong>. ¿Deseas crearlo automáticamente?
         </Modal>
     );
 }

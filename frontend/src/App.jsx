@@ -11,19 +11,33 @@ import StudyDetail from "./components/studies/StudyDetail.jsx";
 function App() {
     const [view, setView] = useState("list");
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [selectedStudy, setSelectedStudy] = useState(null);
-    const [refresh, setRefresh] = useState(0);
+    const [selectedStudyUUID, setSelectedStudyUUID] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
     const handlePatientCreated = (message) => {
         setSuccessMessage(message);
-        setRefresh(r => r + 1);
         setView("list");
     };
 
-    const handlePatientClick = (patient) => {
-        setSelectedPatient(patient);
-        setView("detail")
+    const handlePatientEdited = (message) => {
+        setSuccessMessage(message);
+        setView("list");
+    };
+
+    const handleStudyClick = (study) => {
+        setSelectedStudyUUID(study.studyUUID);
+        setView("studyDetail");
+    };
+
+    //El paciente que llega desde listado no es el paciente completo
+    const handlePatientClick = async (patient) => {
+        setSelectedPatient(await getPatient(patient.id));
+        setView("detail");
+    };
+
+    const handleEdit = async (patient) => {
+        setSelectedPatient(await getPatient(patient.id));
+        setView("edit");
     };
 
     const handleUpload = async (id, file) => {
@@ -50,37 +64,23 @@ function App() {
         await deletePatient(id);
     };
 
-    const handleStudyClick = (study) => {
-        setSelectedStudy(study);
-        setView("studyDetail");
-    };
-
-    const handleEdit = (patient) => {
-        setSelectedPatient(patient)
-        setView("edit")
-    }
-
-    const handlePatientEdited = (message) => {
-        setSuccessMessage(message);
-        setRefresh(r => r + 1); // fuerza recarga de la lista
-        setView("list");
-    };
-
     return (
         <div>
             <Navbar view={view} setView={setView} />
 
-            {view === "list" && <PatientList key={refresh} successMessage={successMessage}
+            {view === "list" && <PatientList successMessage={successMessage}
                                              onSuccessMessageShown={() => setSuccessMessage(null)}
                                              onNewPatientClicked={() => setView("form")}
-                                             onPatientClicked={handlePatientClick} onUploadClicked={handleUpload}
-                                             onUploadGlobalClicked={handleUploadGlobal} onDeleteClicked={handleDelete}
+                                             onPatientClicked={handlePatientClick} 
+                                             onUploadClicked={handleUpload}
+                                             onUploadGlobalClicked={handleUploadGlobal} 
+                                             onDeleteClicked={handleDelete}
                                              onEditClicked={handleEdit}/>}
 
             {view === "form" && <PatientForm onPatientCreated={handlePatientCreated} />}
             {view === "detail" && <PatientDetail patient={selectedPatient} onEditClicked={handleEdit} onUploadClicked={handleUploadFromDetail} onDeleteStudyClicked={handleDeleteStudy} onStudyClicked={handleStudyClick} />}
             {view === "edit" && <PatientEdit patient={selectedPatient} onPatientEdited={handlePatientEdited}/>}
-            {view === "studyDetail" && <StudyDetail study={selectedStudy} onBackClicked={() => setView("detail")} />}
+            {view === "studyDetail" && <StudyDetail studyUUID={selectedStudyUUID} onBackClicked={() => setView("detail")} />}
         </div>
     );
 }

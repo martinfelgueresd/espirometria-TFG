@@ -1,6 +1,5 @@
 package com.espirometrias.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -15,18 +14,23 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class PatientDTO {
+
+    // Nombres y apellidos: letras de cualquier idioma (tildes, ü, ç...), espacios, guiones y apóstrofos,
+    // empezando por una letra. Así se admiten nombres como "Argüelles", "María-José" u "O'Connor".
+    private static final String NAME_PATTERN = "^\\p{L}[\\p{L} '’-]*$";
+
     private UUID id;
 
     @NotBlank(message = "Su identificador es obligatorio")
     @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "El identificador solo puede contener letras y números")
     private String personalId;
 
-    @NotBlank
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$", message = "El nombre solo puede contener letras")
+    @NotBlank(message = "El nombre es obligatorio")
+    @Pattern(regexp = NAME_PATTERN, message = "El nombre solo puede contener letras, espacios, guiones y apóstrofos")
     private String name;
 
-    @NotBlank
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$", message = "Los apellidos solo pueden contener letras")
+    @NotBlank(message = "Los apellidos son obligatorios")
+    @Pattern(regexp = NAME_PATTERN, message = "Los apellidos solo pueden contener letras, espacios, guiones y apóstrofos")
     private String surname;
 
     @NotNull(message = "La fecha es obligatoria")
@@ -57,5 +61,6 @@ public class PatientDTO {
     @JsonProperty("ethnic_group")
     private String ethnicGroup;
 
-    private List<StudyDTO> studies;
+    // Estudios resumidos (sin curvas): el detalle completo de cada uno se pide aparte (GET /studies/{studyUUID}).
+    private List<StudySummaryDTO> studies;
 }

@@ -1,6 +1,6 @@
 import { Pencil, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
-import { buildSessionRow, formatDate} from "../../utils/studyUtils.js";
+import { formatDate } from "../../utils/studyUtils.js";
 import Toast from "../common/Toast.jsx";
 import Modal from "../common/Modal.jsx";
 import { useToast } from "../../hooks/useToast.js";
@@ -16,8 +16,9 @@ const sessionGradeClasses = (grade) => {
 
 function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyClicked, onStudyClicked }) {
 
-    const sessions = (patient.studies ?? []).map(buildSessionRow);
-    const { sortField, sortDir, sortedItems: sortedSessions, handleSort } = useSort(sessions, "date", "desc");
+    // Los estudios llegan del backend ya resumidos (valores de cada sesión calculados allí).
+    // Aquí solo se reordena la tabla por fecha cuando el usuario pulsa la columna.
+    const { sortField, sortDir, sortedItems: sortedStudies, handleSort } = useSort(patient.studies ?? [], "date", "desc");
     const { toast, showToast, clearToast } = useToast();
     const { pickFile } = useFilePicker(".xml");
     const [studyToDelete, setStudyToDelete] = useState(null);
@@ -41,7 +42,7 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
     const handleDeleteConfirm = async () => {
         try {
             setIsDeleting(true);
-            await onDeleteStudyClicked(studyToDelete.id);
+            await onDeleteStudyClicked(studyToDelete.studyUUID);
             showToast("Estudio eliminado correctamente.", "success");
         } catch (error) {
             showToast(error.message, "error");
@@ -49,6 +50,15 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
             setIsDeleting(false);
         }
         setStudyToDelete(null);
+    };
+
+    // Editar pide el paciente al backend: si falla, se avisa aquí.
+    const handleEditClick = async () => {
+        try {
+            await onEditClicked(patient);
+        } catch (error) {
+            showToast(error.message, "error");
+        }
     };
 
     return (
@@ -73,7 +83,7 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
                         {isUploading ? "Subiendo..." : "Subir espirometría"}
                     </button>
                     <button
-                        onClick={() => onEditClicked(patient)}
+                        onClick={handleEditClick}
                         className="inline-flex items-center gap-2 rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50">
                         <Pencil size={16} />
                         Editar paciente
@@ -154,37 +164,37 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 bg-white">
-                    {sessions.length === 0 && (
+                    {sortedStudies.length === 0 && (
                         <tr>
                             <td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-400">
                                 Este paciente todavía no tiene sesiones de espirometría registradas.
                             </td>
                         </tr>
                     )}
-                    {sortedSessions.map(session => (
+                    {sortedStudies.map(({ studyUUID, date, protocol, preSession: pre, postSession: post }) => (
                         <tr
-                            key={session.id}
-                            onClick={() => onStudyClicked(patient.studies.find(s => s.studyUUID === session.id))}
+                            key={studyUUID}
+                            onClick={() => onStudyClicked({ studyUUID })}
                             className="hover:bg-gray-50 cursor-pointer">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{session.fecha}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.protocolo}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fvc_pre ?? "—"} → {session.fvc_post ?? "—"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_pre ?? "—"} → {session.fev1_post ?? "—"}</td>
-                            <td className="px-4 py-3 text-sm text-gray-500">{session.fev1_fvc_pre ? session.fev1_fvc_pre + "%" : "—"} → {session.fev1_fvc_post ? session.fev1_fvc_post + "%" : "—"}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{formatDate(date)}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{protocol}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{pre?.fvc ?? "—"} → {post?.fvc ?? "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{pre?.fev1 ?? "—"} → {post?.fev1 ?? "—"}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{pre?.fev1Fvc ? pre.fev1Fvc + "%" : "—"} → {post?.fev1Fvc ? post.fev1Fvc + "%" : "—"}</td>
                             <td className="px-4 py-3 text-sm">
                                 <div className="flex items-center gap-1.5">
-                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sessionGradeClasses(session.grado_sesion_pre)}`}>
-                                        {session.grado_sesion_pre ?? "—"}
+                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sessionGradeClasses(pre?.sessionGrade)}`}>
+                                        {pre?.sessionGrade ?? "—"}
                                     </span>
                                     <span className="text-gray-400">/</span>
-                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sessionGradeClasses(session.grado_sesion_post)}`}>
-                                        {session.grado_sesion_post ?? "—"}
+                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sessionGradeClasses(post?.sessionGrade)}`}>
+                                        {post?.sessionGrade ?? "—"}
                                     </span>
                                 </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-500">
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); setStudyToDelete(session); }}
+                                    onClick={(e) => { e.stopPropagation(); setStudyToDelete({ studyUUID, date }); }}
                                     className="border border-red-600 text-red-600 hover:bg-red-50 rounded-md px-3 py-1.5 text-xs font-medium">
                                     <Trash2 size={14} />
                                 </button>
@@ -205,7 +215,7 @@ function PatientDetail({ patient, onEditClicked, onUploadClicked, onDeleteStudyC
                     loading={isDeleting}
                     confirmStyle="danger">
                     Esta acción no se puede deshacer. ¿Seguro que quieres eliminar el estudio del{" "}
-                    <strong className="whitespace-nowrap">{studyToDelete.fecha}</strong>?
+                    <strong className="whitespace-nowrap">{formatDate(studyToDelete.date)}</strong>?
                 </Modal>
             )}
         </div>

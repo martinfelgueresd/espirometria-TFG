@@ -21,6 +21,12 @@ public class Study {
     @Id
     private UUID id = UuidCreator.getTimeOrderedEpoch();
 
+    // Versión del registro (bloqueo optimista). Además, como el id se asigna al crear el objeto, Spring Data no puede
+    // saber por el id si el estudio es nuevo; con la versión a null sí lo sabe y hace persist en vez de merge,
+    // así Hibernate no consulta la base de datos por cada sesión, maniobra, curva y parámetro antes de insertarlos.
+    @Version
+    private Long version;
+
     @Column(unique = true)
     private String studyUUID;
 

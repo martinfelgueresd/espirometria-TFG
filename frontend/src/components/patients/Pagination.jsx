@@ -13,7 +13,7 @@ function Pagination({ currentPage, totalPages, from, to, total, onPrev, onNext }
                 </button>
                 <button
                     onClick={onNext}
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage >= totalPages}
                     className="px-3 py-1 text-sm border border-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-50">
                     Siguiente
                 </button>

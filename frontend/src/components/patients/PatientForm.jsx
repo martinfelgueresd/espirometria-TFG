@@ -21,7 +21,7 @@ const INITIAL_VALUES = {
 
 function PatientForm({ onPatientCreated }) {
     const { form, errors, shaking, handleChange, setErrors, resetForm } = usePatientForm(INITIAL_VALUES);
-    const { toast, clearToast } = useToast();
+    const { toast, showToast, clearToast } = useToast();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,8 +29,10 @@ function PatientForm({ onPatientCreated }) {
             await createPatient(form);
             onPatientCreated(`Paciente ${form.name} ${form.surname} creado correctamente.`);
             resetForm();
-        } catch (errors) {
-            setErrors(errors);
+        } catch (error) {
+            // Se marcan los campos con error (si los hay) y siempre se muestra el mensaje del error.
+            setErrors(error.fieldErrors ?? {});
+            showToast(error.message, "error");
         }
     };
 
